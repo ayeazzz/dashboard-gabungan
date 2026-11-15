@@ -16,7 +16,7 @@ export function Donut({ parts, size = 96, thickness = 20 }: { parts: Part[]; siz
     color: parts[i].color,
   }));
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90 shrink-0" aria-hidden>
       {arcs.map((a, i) => (
         <circle
           key={i}
@@ -60,8 +60,12 @@ export function BarList({
   return (
     <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item.label} className="flex items-center gap-3">
-          <span className="shrink-0 truncate text-xs text-ink" style={{ width: labelWidth }} title={item.label}>
+        <li key={item.label} className="flex items-center gap-2 sm:gap-3">
+          <span
+            className="shrink-0 truncate text-xs text-ink"
+            style={{ width: labelWidth, maxWidth: "45%" }}
+            title={item.label}
+          >
             {item.label}
           </span>
           <span className="h-2.5 flex-1 rounded-full bg-border">
@@ -71,7 +75,7 @@ export function BarList({
             />
           </span>
           {showValue && (
-            <span className="w-12 shrink-0 text-right text-xs text-ink tabular-nums">{int(item.value)}</span>
+            <span className="w-10 sm:w-12 shrink-0 text-right text-xs text-ink tabular-nums">{int(item.value)}</span>
           )}
         </li>
       ))}
@@ -90,10 +94,10 @@ export function StackedBarList({
   return (
     <ul className="space-y-2">
       {rows.map((row) => (
-        <li key={row.label} className="flex items-center gap-3">
+        <li key={row.label} className="flex items-center gap-2 sm:gap-3">
           <span
             className="shrink-0 truncate text-xs text-ink"
-            style={{ width: labelWidth, maxWidth: "45%" }}
+            style={{ width: labelWidth, maxWidth: "42%" }}
             title={row.label}
           >
             {row.label}
@@ -109,7 +113,7 @@ export function StackedBarList({
                 ))}
             </span>
           </span>
-          <span className="w-12 shrink-0 text-right text-xs text-ink-muted tabular-nums">{int(row.total)}</span>
+          <span className="w-10 sm:w-12 shrink-0 text-right text-xs text-ink-muted tabular-nums">{int(row.total)}</span>
         </li>
       ))}
     </ul>
@@ -127,26 +131,31 @@ export function GroupedBars({
 }) {
   const max = Math.max(...series.flatMap((s) => s.values), 1);
   return (
-    <div className="overflow-x-auto">
-      <div className="flex min-w-max items-end gap-2 border-b border-border" style={{ height }}>
-        {groups.map((g, i) => (
-          <div key={g} className="flex h-full w-14 shrink-0 flex-col justify-end">
-            <div className="flex flex-1 items-end justify-center gap-[3px]">
-              {series.map((s) => (
-                <span
-                  key={s.label}
-                  className="w-3 rounded-t-[2px]"
-                  style={{ height: `${(s.values[i] / max) * 100}%`, background: s.color }}
-                  title={`${g} · ${s.label}: ${int(s.values[i])}`}
-                />
-              ))}
+    <div>
+      <div className="overflow-x-auto pb-1">
+        <div className="flex min-w-max items-end gap-2 border-b border-border" style={{ height }}>
+          {groups.map((g, i) => (
+            <div key={g} className="flex h-full w-12 sm:w-14 shrink-0 flex-col justify-end">
+              <div className="flex flex-1 items-end justify-center gap-[2px] sm:gap-[3px]">
+                {series.map((s) => (
+                  <span
+                    key={s.label}
+                    className="w-2.5 sm:w-3 rounded-t-[2px]"
+                    style={{ height: `${(s.values[i] / max) * 100}%`, background: s.color }}
+                    title={`${g} · ${s.label}: ${int(s.values[i])}`}
+                  />
+                ))}
+              </div>
+              <span className="mt-1.5 truncate text-center text-[10px] sm:text-[11px] text-ink-muted" title={g}>
+                {g}
+              </span>
             </div>
-            <span className="mt-1.5 truncate text-center text-[11px] text-ink-muted" title={g}>
-              {g}
-            </span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+      <p className="mt-1.5 text-right text-[10px] sm:text-[11px] text-ink-muted md:hidden">
+        ← Geser grafik untuk melihat 19 fakultas →
+      </p>
     </div>
   );
 }
@@ -164,7 +173,7 @@ export function DailyBars({
   const max = Math.max(...data.map((d) => d.value), 1);
   return (
     <div>
-      <div className="relative flex items-end gap-[3px] border-b border-border" style={{ height }}>
+      <div className="relative flex items-end gap-[2px] sm:gap-[3px] border-b border-border" style={{ height }}>
         {avg !== null && avg > 0 && (
           <span
             className="pointer-events-none absolute inset-x-0 border-t border-dashed"
@@ -180,7 +189,7 @@ export function DailyBars({
           />
         ))}
       </div>
-      <div className="mt-1 flex justify-between text-[11px] text-ink-muted">
+      <div className="mt-1 flex justify-between text-[10px] sm:text-[11px] text-ink-muted">
         <span>{data[0]?.tanggal}</span>
         <span>{data.at(-1)?.tanggal}</span>
       </div>

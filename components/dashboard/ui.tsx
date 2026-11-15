@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 
-// Sengaja tanpa text-align & vertical-align: <th> default-nya center/middle, jadi
-// arah tiap kolom harus disebut eksplisit di pemakaian (text-left / text-right).
-export const cellTh = "whitespace-nowrap px-3 py-2 text-[13px] font-bold text-ink";
-export const cellTd = "whitespace-nowrap px-3 py-2 text-[13px] text-ink tabular-nums";
+// Cell styling: text-left/text-right ditentukan secara eksplisit di tiap kolom.
+export const cellTh = "whitespace-nowrap px-2.5 py-2 sm:px-3 text-xs sm:text-[13px] font-bold text-ink";
+export const cellTd = "whitespace-nowrap px-2.5 py-2 sm:px-3 text-xs sm:text-[13px] text-ink tabular-nums";
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="space-y-3">
-      <h2 className="flex items-center gap-2 text-base font-bold text-ink">
+    <section className="space-y-2.5 sm:space-y-3">
+      <h2 className="flex items-center gap-2 text-sm sm:text-base font-bold text-ink">
         <span className="h-4 w-1 rounded-sm bg-series-1" />
         {title}
       </h2>
@@ -31,37 +30,59 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <div className={`flex min-w-0 flex-col rounded-panel bg-surface p-4 shadow-card ${className}`}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-bold text-ink">{title}</h3>
-          {note && <p className="mt-0.5 text-xs text-ink-muted">{note}</p>}
+    <div className={`flex min-w-0 flex-col rounded-panel bg-surface p-3.5 sm:p-5 shadow-card ${className}`}>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-2">
+        <div className="min-w-0 flex-1">
+          <h3 className="text-xs sm:text-sm font-bold text-ink truncate sm:whitespace-normal">{title}</h3>
+          {note && <p className="mt-0.5 text-[11px] sm:text-xs text-ink-muted leading-relaxed">{note}</p>}
         </div>
-        {aside}
+        {aside && <div className="shrink-0 pt-1 sm:pt-0">{aside}</div>}
       </div>
       <div className="mt-3 flex flex-1 flex-col justify-center">{children}</div>
     </div>
   );
 }
 
-export function KpiCard({ label, value, note }: { label: string; value: string; note: string }) {
+export function KpiCard({
+  label,
+  value,
+  note,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  note: string;
+  className?: string;
+}) {
   return (
-    <div className="rounded-card bg-surface p-4 shadow-card">
-      <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">{label}</p>
-      <p className="mt-1 text-3xl font-bold leading-tight text-ink tabular-nums">{value}</p>
-      <p className="mt-1 text-xs text-ink-muted">{note}</p>
+    <div className={`rounded-card bg-surface p-3 sm:p-4 shadow-card flex flex-col justify-between ${className}`}>
+      <div>
+        <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-ink-muted">{label}</p>
+        <p className="mt-1 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight text-ink tabular-nums">{value}</p>
+      </div>
+      <p className="mt-1.5 text-[10px] sm:text-xs text-ink-muted leading-snug">{note}</p>
     </div>
   );
 }
 
-export function PageHeader({ title, action, note }: { title: string; action?: ReactNode; note?: string }) {
+export function PageHeader({
+  title,
+  action,
+  note,
+}: {
+  title: string;
+  action?: ReactNode;
+  note?: string;
+}) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3">
-      <h1 className="rounded-lg bg-primary px-4 py-2 text-2xl text-ink">{title}</h1>
+    <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <h1 className="inline-block w-fit rounded-lg bg-primary px-3 py-1.5 text-lg sm:text-2xl font-bold text-ink">
+        {title}
+      </h1>
       {(action || note) && (
-        <div className="text-right">
+        <div className="flex flex-col sm:items-end">
           {action}
-          {note && <p className="mt-1 text-xs text-ink-muted">{note}</p>}
+          {note && <p className="mt-1 text-[11px] sm:text-xs text-ink-muted">{note}</p>}
         </div>
       )}
     </header>
@@ -70,7 +91,9 @@ export function PageHeader({ title, action, note }: { title: string; action?: Re
 
 export function PanelGrid({ cols = 3, children }: { cols?: 2 | 3; children: ReactNode }) {
   return (
-    <div className={`grid gap-3 ${cols === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>{children}</div>
+    <div className={`grid gap-3 ${cols === 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"}`}>
+      {children}
+    </div>
   );
 }
 
@@ -78,18 +101,18 @@ export function RowCount({ shown }: { shown: number }) {
   return <p className="py-2 text-center text-xs text-ink-muted">Menampilkan {shown} program studi</p>;
 }
 
-// Fallback selama query berjalan; bentuknya menyerupai isi halaman supaya tidak melompat.
+// Fallback selama query berjalan
 export function LoadingShell() {
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-[1600px] flex-1 flex-col gap-6 bg-surface-alt p-4 sm:p-6 lg:p-8" aria-busy>
-      <div className="h-11 w-72 animate-pulse rounded-lg bg-border" />
-      <div className="h-32 animate-pulse rounded-card bg-surface" />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+    <div className="mx-auto flex min-h-full w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6 bg-surface-alt p-3 sm:p-6 lg:p-8" aria-busy>
+      <div className="h-9 sm:h-11 w-48 sm:w-72 animate-pulse rounded-lg bg-border" />
+      <div className="h-28 sm:h-32 animate-pulse rounded-card bg-surface" />
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-5">
         {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="h-24 animate-pulse rounded-card bg-surface" />
+          <div key={i} className="h-20 sm:h-24 animate-pulse rounded-card bg-surface" />
         ))}
       </div>
-      <div className="h-72 animate-pulse rounded-panel bg-surface" />
+      <div className="h-64 sm:h-72 animate-pulse rounded-panel bg-surface" />
     </div>
   );
 }

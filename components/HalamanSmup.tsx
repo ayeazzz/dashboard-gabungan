@@ -25,24 +25,16 @@ export default async function HalamanSmup({
   const belumRegistrasi = Math.max(k.diterima - k.registrasi, 0);
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6">
+    <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-3 sm:p-6 lg:p-8">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6">
         <PageHeader
           title="Keketatan SMUP"
-          action={
-            <Link
-              href="/pmb"
-              className="inline-block rounded-lg border border-primary-accent bg-primary px-4 py-1.5 text-xs font-bold text-ink transition-colors hover:bg-primary-accent"
-            >
-              Lihat Dashboard PMB →
-            </Link>
-          }
           note={`Snapshot data · tahun acuan ${k.tahunAcuan}`}
         />
 
         <FilterBar filters={filters} options={options} />
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-5">
           <KpiCard
             label="Jumlah Pendaftar"
             value={int(k.pendaftar)}
@@ -64,13 +56,14 @@ export default async function HalamanSmup({
             note={`Tahun acuan ${k.tahunAcuan} · ${int(k.prodiScope)} prodi`}
           />
           <KpiCard
+            className="col-span-2 sm:col-span-1"
             label="Rata-rata Keketatan"
             value={pct(k.rataKeketatan)}
             note={`Rata-rata per prodi berdata · ${int(k.prodiBerdata)} prodi`}
           />
         </div>
 
-        <p className="-mt-3 text-xs text-ink-muted">
+        <p className="-mt-1 sm:-mt-3 text-[11px] sm:text-xs text-ink-muted">
           {filters.mode === "dedup"
             ? "Mode Dedup aktif: nomor pendaftaran ganda dihitung satu kali (baris berstatus Lulus/Registrasi dipertahankan)."
             : `Catatan: ${int(k.duplikat)} pendaftar tercatat ganda (lulus dan tidak lulus) karena perubahan status; belum di-dedup.`}
@@ -140,7 +133,9 @@ export default async function HalamanSmup({
                   <thead>
                     <tr className="bg-surface-alt">
                       <th className={`${cellTh} text-left`}>No</th>
-                      <th className={`${cellTh} text-left`}>Prodi (Jenjang)</th>
+                      <th className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}>
+                        Prodi (Jenjang)
+                      </th>
                       <th className={`${cellTh} text-right`}>Pendaftar</th>
                       <th className={`${cellTh} text-right`}>Daya tampung</th>
                       <th className={`${cellTh} text-right`}>Rasio</th>
@@ -151,7 +146,9 @@ export default async function HalamanSmup({
                     {data.topRasio.map((r, i) => (
                       <tr key={r.prodi} className="border-b border-border last:border-0">
                         <td className={cellTd}>{i + 1}</td>
-                        <td className={cellTd}>{r.prodi}</td>
+                        <td className={`${cellTd} sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] sm:max-w-none truncate`}>
+                          {r.prodi}
+                        </td>
                         <td className={`${cellTd} text-right`}>{int(r.pendaftarAcuan)}</td>
                         <td className={`${cellTd} text-right`}>{int(r.dayaTampung)}</td>
                         <td className={`${cellTd} text-right`}>{dec(r.rasio, 2)}</td>
@@ -166,41 +163,50 @@ export default async function HalamanSmup({
         </Section>
 
         <Section title="Keketatan & Persaingan per Program Studi">
-          <div className="rounded-panel bg-surface p-4 shadow-card">
-            <p className="text-xs text-ink-muted">
-              Pendaftar, diterima, dan registrasi di tabel ini memakai seluruh baris (termasuk tahun
-              teks) mengikuti tabel Calc_Prodi di workbook, sehingga totalnya bisa melebihi KPI.
-            </p>
-            <div className="mt-3 overflow-x-auto">
+          <div className="rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+              <p className="text-[11px] sm:text-xs text-ink-muted">
+                Pendaftar, diterima, dan registrasi di tabel ini memakai seluruh baris (termasuk tahun
+                teks) mengikuti tabel Calc_Prodi di workbook.
+              </p>
+              <p className="text-[10px] sm:text-[11px] text-ink-muted md:hidden">
+                ← Geser tabel ke samping →
+              </p>
+            </div>
+            <div className="mt-2 overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-surface-alt">
-                    <th className={`${cellTh} text-left`}>Program Studi (Jenjang)</th>
+                    <th className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-0`}>
+                      Program Studi (Jenjang)
+                    </th>
                     <th className={`${cellTh} text-right`}>Pendaftar</th>
                     <th className={`${cellTh} text-right`}>Diterima</th>
                     <th className={`${cellTh} text-right`}>Daya Tampung</th>
                     <th className={`${cellTh} text-right`}>
                       Keketatan
-                      <span className="block text-xs font-normal text-ink-muted">(% Diterima)</span>
+                      <span className="block text-[10px] font-normal text-ink-muted">(% Diterima)</span>
                     </th>
                     <th className={`${cellTh} text-right`}>
                       Persaingan
-                      <span className="block text-xs font-normal text-ink-muted">(Pendaftar : 1 Diterima)</span>
+                      <span className="block text-[10px] font-normal text-ink-muted">(Pendaftar : 1)</span>
                     </th>
                     <th className={`${cellTh} text-right`}>
                       Rasio Peminat :
-                      <span className="block text-xs font-normal text-ink-muted">Daya Tampung</span>
+                      <span className="block text-[10px] font-normal text-ink-muted">Daya Tampung</span>
                     </th>
                     <th className={`${cellTh} text-right`}>
-                      Peringkat Keketatan
-                      <span className="block text-xs font-normal text-ink-muted">(1 = paling ketat)</span>
+                      Peringkat
+                      <span className="block text-[10px] font-normal text-ink-muted">(1 = terketat)</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.prodi.map((r) => (
-                    <tr key={r.prodi} className="border-b border-border last:border-0">
-                      <td className={cellTd}>{r.prodi}</td>
+                    <tr key={r.prodi} className="border-b border-border last:border-0 hover:bg-surface-alt/50">
+                      <td className={`${cellTd} sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] sm:max-w-none truncate`}>
+                        {r.prodi}
+                      </td>
                       <td className={`${cellTd} text-right`}>{int(r.pendaftar)}</td>
                       <td className={`${cellTd} text-right`}>{int(r.diterima)}</td>
                       <td className={`${cellTd} text-right`}>{int(r.dayaTampung)}</td>
@@ -218,12 +224,16 @@ export default async function HalamanSmup({
         </Section>
 
         <Section title="Tren Historis per Program Studi (Jenjang)">
-          <div className="rounded-panel bg-surface p-4 shadow-card">
+          <div className="rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
+            <div className="flex justify-between items-center mb-2 md:hidden">
+              <span className="text-[10px] text-ink-muted">Tabel Historis Multi-Tahun</span>
+              <span className="text-[10px] text-ink-muted">← Geser tabel ke samping →</span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr>
-                    <th rowSpan={2} className={`${cellTh} bg-surface-alt align-middle text-left`}>
+                    <th rowSpan={2} className={`${cellTh} bg-surface-alt align-middle text-left sticky left-0 z-20 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-0`}>
                       Program Studi (Jenjang)
                     </th>
                     <th
@@ -231,7 +241,7 @@ export default async function HalamanSmup({
                       className={`${cellTh} border-l border-border bg-primary-subtle text-center align-middle`}
                     >
                       Keketatan
-                      <span className="block text-xs font-normal leading-tight text-ink-muted">
+                      <span className="block text-[10px] font-normal leading-tight text-ink-muted">
                         % diterima dari pendaftar — makin kecil makin ketat
                       </span>
                     </th>
@@ -240,7 +250,7 @@ export default async function HalamanSmup({
                       className={`${cellTh} border-l border-border bg-primary-subtle text-center align-middle`}
                     >
                       Registrasi
-                      <span className="block text-xs font-normal leading-tight text-ink-muted">
+                      <span className="block text-[10px] font-normal leading-tight text-ink-muted">
                         % daftar ulang dari diterima
                       </span>
                     </th>
@@ -260,8 +270,10 @@ export default async function HalamanSmup({
                 </thead>
                 <tbody>
                   {data.matrix.map((r) => (
-                    <tr key={r.prodi} className="border-b border-border last:border-0">
-                      <td className={`${cellTd} text-left`}>{r.prodi}</td>
+                    <tr key={r.prodi} className="border-b border-border last:border-0 hover:bg-surface-alt/50">
+                      <td className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] sm:max-w-none truncate`}>
+                        {r.prodi}
+                      </td>
                       {[...r.keketatan, r.keketatanTotal].map((v, i) => (
                         <td key={`k${i}`} className={`${cellTd} text-right ${i === 6 ? "font-semibold" : ""}`}>
                           {v === null ? "-" : pct(v)}
@@ -286,7 +298,7 @@ export default async function HalamanSmup({
           </div>
         </Section>
 
-        <p className="text-xs text-ink-muted">
+        <p className="text-[11px] sm:text-xs text-ink-muted">
           Filter aktif: jenjang {filters.jenjang || SEMUA}, jalur {filters.jalur || SEMUA}, fakultas{" "}
           {filters.fakultas || SEMUA}, prodi {filters.prodi || SEMUA}, tahun {filters.tahun ?? SEMUA}, mode{" "}
           {modeLabel[filters.mode]}.
@@ -308,13 +320,15 @@ function DonutPanel({
   const total = parts.reduce((a, p) => a + p.value, 0);
   return (
     <Panel title={title} note={note}>
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
         <Donut parts={parts} size={96} />
-        <ul className="space-y-1.5">
+        <ul className="w-full space-y-1.5 sm:w-auto">
           {parts.map((p) => (
-            <li key={p.label} className="flex items-center gap-2 text-xs text-ink">
-              <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
-              {p.label}
+            <li key={p.label} className="flex items-center justify-between sm:justify-start gap-2 text-xs text-ink">
+              <span className="flex items-center gap-2">
+                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
+                {p.label}
+              </span>
               <span className="tabular-nums text-ink-muted">
                 {int(p.value)} ({pct(total ? p.value / total : null)})
               </span>

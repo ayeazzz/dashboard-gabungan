@@ -36,42 +36,34 @@ export default async function HalamanPmb({
   }));
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6">
+    <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-3 sm:p-6 lg:p-8">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6">
         <PageHeader
           title="Dashboard PMB"
-          action={
-            <Link
-              href="/"
-              className="inline-block rounded-lg border border-border bg-surface px-4 py-1.5 text-xs font-bold text-ink transition-colors hover:bg-primary-subtle"
-            >
-              ← Kembali ke Keketatan SMUP
-            </Link>
-          }
           note={`Snapshot per ${tanggalPanjang(k.tanggalTerakhir)} · bukan siaran langsung`}
         />
 
         <FilterBar filters={filters} options={options} />
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
           <KpiCard label="Pendaftar Hari Ini" value={int(k.hariIni)} note={`Tanggal ${tanggalPanjang(k.tanggalTerakhir)}`} />
           <KpiCard label="Rata-rata Harian" value={dec(k.rataHarian, 1)} note="30 hari kalender terakhir" />
           <KpiCard label="Terverifikasi" value={int(k.terverifikasi)} note={pct(totalBerstatus ? k.terverifikasi / totalBerstatus : null)} />
           <KpiCard label="Menunggu" value={int(k.menunggu)} note={pct(totalBerstatus ? k.menunggu / totalBerstatus : null)} />
           <KpiCard label="Ditolak" value={int(k.ditolak)} note={pct(totalBerstatus ? k.ditolak / totalBerstatus : null)} />
-          <KpiCard label="Total Semua Pendaftar" value={int(k.totalPendaftar)} note="Baris dengan tahun teks dikecualikan" />
+          <KpiCard label="Total Semua Pendaftar" value={int(k.totalPendaftar)} note="Baris tahun teks dikecualikan" />
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr]">
           <Panel
             title="Tren Pendaftar Harian (30 hari terakhir)"
-            note="Tanggal pendaftaran pada data dummy dibangkitkan acak, jadi tinggi batang tidak bisa sama persis dengan workbook. Angka dihitung dari kolom tgl_daftar."
+            note="Tanggal pendaftaran pada data dummy dibangkitkan acak, dihitung dari kolom tgl_daftar."
           >
             <DailyBars data={data.harian} avg={k.rataHarian} />
           </Panel>
 
           <Panel title="Tracking Verifikasi Berkas" note={`${int(totalBerstatus)} baris berstatus`}>
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
               <Donut
                 parts={[
                   { value: k.menunggu, color: WARNA.menunggu },
@@ -81,15 +73,17 @@ export default async function HalamanPmb({
                 size={104}
                 thickness={22}
               />
-              <ul className="space-y-1.5">
+              <ul className="w-full space-y-1.5 sm:w-auto">
                 {[
                   { label: "Menunggu", value: k.menunggu, color: WARNA.menunggu },
                   { label: "Terverifikasi", value: k.terverifikasi, color: WARNA.terverifikasi },
                   { label: "Ditolak", value: k.ditolak, color: WARNA.ditolak },
                 ].map((s) => (
-                  <li key={s.label} className="flex items-center gap-2 text-xs text-ink">
-                    <i className="size-2 shrink-0 rounded-[2px]" style={{ background: s.color }} />
-                    {s.label}
+                  <li key={s.label} className="flex items-center justify-between sm:justify-start gap-2 text-xs text-ink">
+                    <span className="flex items-center gap-2">
+                      <i className="size-2 shrink-0 rounded-[2px]" style={{ background: s.color }} />
+                      {s.label}
+                    </span>
                     <span className="tabular-nums text-ink-muted">
                       {int(s.value)} ({pct(totalBerstatus ? s.value / totalBerstatus : null)})
                     </span>
@@ -101,16 +95,18 @@ export default async function HalamanPmb({
         </div>
 
         <Section title="Status Verifikasi Berkas per Program Studi">
-          <div className="rounded-panel bg-surface p-4 shadow-card">
-            <p className="text-xs text-ink-muted">
-              Tiga kategori memakai pencocokan awalan status: Terverifikasi*, Menunggu*, Ditolak*. 675
-              baris berstatus lain (Dalam Verifikasi / Belum Diverifikasi) tidak dihitung, dan bagian ini
-              mencakup seluruh baris termasuk 3.783 baris tahun-teks — karena itu totalnya 43.157, bukan
-              40.049.
-            </p>
+          <div className="rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+              <p className="text-[11px] sm:text-xs text-ink-muted">
+                Tiga kategori memakai awalan status: Terverifikasi*, Menunggu*, Ditolak* (total 43.157 baris).
+              </p>
+              <p className="text-[10px] sm:text-[11px] text-ink-muted md:hidden">
+                ← Geser tabel ke samping →
+              </p>
+            </div>
 
             <Legend
-              className="mt-3"
+              className="mt-2"
               items={[
                 { label: "Menunggu", color: WARNA.menunggu },
                 { label: "Terverifikasi", color: WARNA.terverifikasi },
@@ -119,14 +115,16 @@ export default async function HalamanPmb({
             />
 
             <div className="mt-3">
-              <StackedBarList rows={chartRows} labelWidth="14rem" />
+              <StackedBarList rows={chartRows} labelWidth="10rem" />
             </div>
 
-            <div className="mt-4 overflow-x-auto border-t border-border pt-4">
+            <div className="mt-4 overflow-x-auto border-t border-border pt-3">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-surface-alt">
-                    <th className={`${cellTh} text-left`}>Program Studi (Jenjang)</th>
+                    <th className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-0`}>
+                      Program Studi (Jenjang)
+                    </th>
                     <th className={`${cellTh} text-right`}>Menunggu</th>
                     <th className={`${cellTh} text-right`}>Terverifikasi</th>
                     <th className={`${cellTh} text-right`}>Ditolak</th>
@@ -138,8 +136,10 @@ export default async function HalamanPmb({
                 </thead>
                 <tbody>
                   {data.perProdi.map((r) => (
-                    <tr key={r.prodi} className="border-b border-border last:border-0">
-                      <td className={`${cellTd} text-left`}>{r.prodi}</td>
+                    <tr key={r.prodi} className="border-b border-border last:border-0 hover:bg-surface-alt/50">
+                      <td className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] sm:max-w-none truncate`}>
+                        {r.prodi}
+                      </td>
                       <td className={`${cellTd} text-right`}>{int(r.menunggu)}</td>
                       <td className={`${cellTd} text-right`}>{int(r.terverifikasi)}</td>
                       <td className={`${cellTd} text-right`}>{int(r.ditolak)}</td>

@@ -22,7 +22,7 @@ export default function Navbar({
           <button
             type="button"
             onClick={onToggleMobileSidebar}
-            className="flex items-center justify-center rounded-lg p-2 text-ink hover:bg-surface-alt md:hidden"
+            className="flex size-10 items-center justify-center rounded-lg text-ink hover:bg-surface-alt active:bg-primary-subtle md:hidden"
             aria-label="Buka navigasi dashboard"
           >
             <svg
