@@ -5,8 +5,13 @@ import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { Client } from "pg";
 
+const rawUrl =
+  process.env.DATABASE_URL ?? "postgres://smup:smup@localhost:55432/dashboard_smup";
+const isSupabase = rawUrl.includes("supabase.com");
+
 const client = new Client({
-  connectionString: process.env.DATABASE_URL ?? "postgres://smup:smup@localhost:55432/dashboard_smup",
+  connectionString: isSupabase ? rawUrl.replace(/[?&]sslmode=[^&]+/, "") : rawUrl,
+  ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
 });
 await client.connect();
 after(() => client.end());

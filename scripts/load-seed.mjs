@@ -4,7 +4,8 @@
 import { readFile } from "node:fs/promises";
 import { Client } from "pg";
 
-const URL = process.env.DATABASE_URL ?? "postgres://smup:smup@localhost:55432/dashboard_smup";
+const rawUrl = process.env.DATABASE_URL ?? "postgres://smup:smup@localhost:55432/dashboard_smup";
+const isSupabase = rawUrl.includes("supabase.com");
 const DIR = "dashboard smup sql";
 
 // Buang perintah khusus MySQL. File seed tidak memakai escape backslash,
@@ -16,7 +17,10 @@ const strip = (sql) =>
     .map((s) => s.trim())
     .filter(Boolean);
 
-const client = new Client({ connectionString: URL });
+const client = new Client({
+  connectionString: isSupabase ? rawUrl.replace(/[?&]sslmode=[^&]+/, "") : rawUrl,
+  ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
+});
 await client.connect();
 await client.query("SET statement_timeout = 0");
 
