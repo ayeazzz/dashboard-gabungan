@@ -40,6 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# local data & assets (not versioned)
+/sheets/
+/shots/
+
 # local tooling artifacts
 /.playwright-mcp/
 noname.gv
