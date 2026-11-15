@@ -7,11 +7,6 @@ import { SEMUA, SERIES, dec, int, parseFilters, pct } from "@/lib/dashboard/form
 import { getFilterOptions, getSmupData } from "@/lib/dashboard/query";
 import type { Filters } from "@/lib/dashboard/types";
 
-const modeLabel: Record<Filters["mode"], string> = {
-  "apa-adanya": "Apa adanya",
-  dedup: "Dedup",
-};
-
 export default async function HalamanSmup({
   searchParams,
 }: {
@@ -64,9 +59,7 @@ export default async function HalamanSmup({
         </div>
 
         <p className="-mt-1 sm:-mt-3 text-[11px] sm:text-xs text-ink-muted">
-          {filters.mode === "dedup"
-            ? "Mode Dedup aktif: nomor pendaftaran ganda dihitung satu kali (baris berstatus Lulus/Registrasi dipertahankan)."
-            : `Catatan: ${int(k.duplikat)} pendaftar tercatat ganda (lulus dan tidak lulus) karena perubahan status; belum di-dedup.`}
+          Catatan: {int(k.duplikat)} pendaftar tercatat ganda (lulus dan tidak lulus) karena perubahan status.
         </p>
 
         <Section title="Ringkasan & Status">
@@ -300,8 +293,7 @@ export default async function HalamanSmup({
 
         <p className="text-[11px] sm:text-xs text-ink-muted">
           Filter aktif: jenjang {filters.jenjang || SEMUA}, jalur {filters.jalur || SEMUA}, fakultas{" "}
-          {filters.fakultas || SEMUA}, prodi {filters.prodi || SEMUA}, tahun {filters.tahun ?? SEMUA}, mode{" "}
-          {modeLabel[filters.mode]}.
+          {filters.fakultas || SEMUA}, prodi {filters.prodi || SEMUA}, tahun {filters.tahun ?? SEMUA}.
         </p>
       </div>
     </div>

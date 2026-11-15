@@ -15,8 +15,7 @@ export function FilterBar({ filters, options }: { filters: Filters; options: Fil
   const change = (key: keyof Filters, value: string) => {
     const next: Filters = { ...filters };
     if (key === "tahun") next.tahun = value ? Number(value) : null;
-    else if (key === "mode") next.mode = value === "dedup" ? "dedup" : "apa-adanya";
-    else next[key] = value;
+    else next[key] = value as never;
 
     router.replace(pathname + toQuery(next), { scroll: false });
   };
@@ -30,8 +29,7 @@ export function FilterBar({ filters, options }: { filters: Filters; options: Fil
       filters.jalur ||
       filters.fakultas ||
       filters.prodi ||
-      filters.tahun ||
-      filters.mode === "dedup",
+      filters.tahun,
   );
 
   const fields = [
@@ -44,7 +42,7 @@ export function FilterBar({ filters, options }: { filters: Filters; options: Fil
 
   return (
     <div className="rounded-card bg-surface p-3.5 sm:p-4 shadow-card">
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-5">
         {fields.map((f) => (
           <label key={f.key} className={`block ${f.colSpan}`}>
             <span className="mb-1 block text-[11px] font-bold text-ink-muted">{f.label}</span>
@@ -62,18 +60,11 @@ export function FilterBar({ filters, options }: { filters: Filters; options: Fil
             </select>
           </label>
         ))}
-        <label className="col-span-1 block">
-          <span className="mb-1 block text-[11px] font-bold text-ink-muted">MODE DATA</span>
-          <select value={filters.mode} onChange={(e) => change("mode", e.target.value)} className={selectCls}>
-            <option value="apa-adanya">Apa adanya</option>
-            <option value="dedup">Dedup</option>
-          </select>
-        </label>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2.5 text-xs text-ink-muted">
         <p className="text-[11px] leading-tight text-ink-muted">
-          Filter tersimpan di URL sehingga bisa dibagikan. Mode Dedup membuang nomor pendaftaran ganda.
+          Filter tersimpan di URL sehingga dapat dibagikan.
         </p>
         {hasActiveFilters && (
           <button

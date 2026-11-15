@@ -45,7 +45,6 @@ export function toQuery(f: Filters): string {
   if (f.fakultas) q.set("fakultas", f.fakultas);
   if (f.prodi) q.set("prodi", f.prodi);
   if (f.tahun) q.set("tahun", String(f.tahun));
-  if (f.mode === "dedup") q.set("mode", "dedup");
   const s = q.toString();
   return s ? `?${s}` : "";
 }
