@@ -175,7 +175,7 @@ export function DailyBars({
           <span
             key={d.tanggal}
             className="min-w-0 flex-1 rounded-t-[2px]"
-            style={{ height: `${(d.value / max) * 100}%`, background: SERIES.s4 }}
+            style={{ height: `${(d.value / max) * 100}%`, background: SERIES.s1 }}
             title={`${d.tanggal}: ${int(d.value)}`}
           />
         ))}

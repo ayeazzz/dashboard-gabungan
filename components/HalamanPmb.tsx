@@ -3,10 +3,10 @@ import Link from "next/link";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { DailyBars, Donut, Legend, StackedBarList } from "@/components/dashboard/charts";
 import { KpiCard, PageHeader, Panel, RowCount, Section, cellTd, cellTh } from "@/components/dashboard/ui";
-import { DANGER, SERIES, dec, int, parseFilters, pct } from "@/lib/dashboard/format";
+import { SERIES, dec, int, parseFilters, pct } from "@/lib/dashboard/format";
 import { getFilterOptions, getPmbData } from "@/lib/dashboard/query";
 
-const WARNA = { menunggu: SERIES.s2, terverifikasi: SERIES.s1, ditolak: DANGER };
+const WARNA = { menunggu: SERIES.s2, terverifikasi: SERIES.s1, ditolak: SERIES.s3 };
 
 const tanggalPanjang = (tanggal: string | null) =>
   tanggal
