@@ -4,7 +4,20 @@
 import { readFile } from "node:fs/promises";
 import { Client } from "pg";
 
-const rawUrl = process.env.DATABASE_URL ?? "postgres://smup:smup@localhost:55432/dashboard_smup";
+if (!process.env.DATABASE_URL_SMUP && !process.env.DATABASE_URL && typeof process.loadEnvFile === "function") {
+  try {
+    process.loadEnvFile(".env.local");
+  } catch {
+    try {
+      process.loadEnvFile(".env");
+    } catch {}
+  }
+}
+
+const rawUrl =
+  process.env.DATABASE_URL_SMUP ??
+  process.env.DATABASE_URL ??
+  "postgres://smup:smup@localhost:55432/dashboard_smup";
 const isSupabase = rawUrl.includes("supabase.com");
 const DIR = "dashboard smup sql";
 
@@ -32,12 +45,6 @@ for (const file of ["02_seed_master.sql", "03_seed_pendaftaran.sql"]) {
   console.log(`✓ ${file}`);
 }
 
-// Muat seed untuk Dashboard Herregistrasi dan Dashboard Nilai Mahasiswa
-for (const file of ["db/seed_herregistrasi.sql", "db/seed_nilai.sql"]) {
-  await client.query(await readFile(file, "utf8"));
-  console.log(`✓ ${file}`);
-}
-
 // Angka acuan workbook. Kalau salah satu gagal, seed memang tidak bisa dipercaya.
 const checks = [
   ["pendaftaran", "SELECT count(*) FROM pendaftaran", 43832],
@@ -51,8 +58,6 @@ const checks = [
   ["jalur_masuk", "SELECT count(*) FROM jalur_masuk", 8],
   ["daya_tampung", "SELECT count(*) FROM daya_tampung", 1266],
   ["daya_tampung_jalur", "SELECT count(*) FROM daya_tampung_jalur", 72],
-  ["mahasiswa_aktif", "SELECT count(*) FROM mahasiswa_aktif", 31770],
-  ["nilai_mahasiswa", "SELECT count(*) FROM nilai_mahasiswa", 194859],
 ];
 let failed = 0;
 for (const [label, sql, expected] of checks) {

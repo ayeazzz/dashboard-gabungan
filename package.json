@@ -10,7 +10,9 @@
     "test": "node --test tests/*.test.mjs",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:setup": "node scripts/load-seed.mjs"
+    "db:setup": "node scripts/load-seed.mjs",
+    "db:setup:herreg": "node scripts/setup-domain.mjs herreg",
+    "db:setup:nilai": "node scripts/setup-domain.mjs nilai"
   },
   "dependencies": {
     "next": "16.4.6",

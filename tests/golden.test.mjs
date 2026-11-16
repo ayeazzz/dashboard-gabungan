@@ -5,6 +5,16 @@ import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { Client } from "pg";
 
+if (!process.env.DATABASE_URL && typeof process.loadEnvFile === "function") {
+  try {
+    process.loadEnvFile(".env.local");
+  } catch {
+    try {
+      process.loadEnvFile(".env");
+    } catch {}
+  }
+}
+
 const rawUrl =
   process.env.DATABASE_URL ?? "postgres://smup:smup@localhost:55432/dashboard_smup";
 const isSupabase = rawUrl.includes("supabase.com");
