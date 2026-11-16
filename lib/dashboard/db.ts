@@ -13,6 +13,7 @@ export const pool =
     connectionString: isSupabase ? rawUrl.replace(/[?&]sslmode=[^&]+/, "") : rawUrl,
     ssl: isSupabase ? { rejectUnauthorized: false } : undefined,
     max: 5,
+    connectionTimeoutMillis: 1500,
   });
 
 if (process.env.NODE_ENV !== "production") globalForDb.smupPool = pool;

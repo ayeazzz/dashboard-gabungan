@@ -5,6 +5,8 @@
 export const dashboardLinks = [
   { label: "SMUP", href: "/" },
   { label: "PMB", href: "/pmb" },
+  { label: "Herregistrasi", href: "/herregistrasi" },
+  { label: "Nilai", href: "/nilai" },
 ];
 
 export const copyright = "© 2026 Nama Institusi. Seluruh hak cipta dilindungi.";

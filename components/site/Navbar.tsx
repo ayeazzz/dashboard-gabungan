@@ -71,7 +71,7 @@ export default function Navbar({
         {/* Kanan Navbar: Label Portal Ringkas (tanpa tombol navigasi polos) */}
         <div className="flex items-center gap-2">
           <span className="hidden sm:inline-block rounded-full bg-primary-subtle px-3 py-1 text-xs font-semibold text-ink border border-primary/40">
-            Portal Analitik SMUP & PMB
+            Portal Analitik Akademik
           </span>
         </div>
       </div>

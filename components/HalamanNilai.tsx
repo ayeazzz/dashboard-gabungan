@@ -1,0 +1,277 @@
+// Server Component — tidak ada "use client".
+// Semua kalkulasi sudah di SQL; komponen ini hanya merender hasilnya.
+import { Donut, GroupedBars, Legend } from "@/components/dashboard/charts";
+import {
+  KpiCard,
+  PageHeader,
+  Panel,
+  Section,
+  cellTd,
+  cellTh,
+} from "@/components/dashboard/ui";
+import { SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
+import { getFilterOptionsNilai, getNilaiData } from "@/lib/dashboard/query-nilai";
+import type { FiltersNilai } from "@/lib/dashboard/types-nilai";
+import FilterBarNilai from "@/components/FilterBarNilai";
+
+// ----- Helpers -----
+
+function parseFiltersNilai(sp: Record<string, string | string[] | undefined>): FiltersNilai {
+  const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
+  return {
+    fakultas: one(sp.fakultas),
+    prodi: one(sp.prodi),
+    kategoriNilai: one(sp.kategoriNilai),
+    jenisNilai: one(sp.jenisNilai),
+  };
+}
+
+// Donut panel reusable
+function DonutPanel({
+  title,
+  note,
+  parts,
+}: {
+  title: string;
+  note?: string;
+  parts: { label: string; value: number; color: string }[];
+}) {
+  const total = parts.reduce((a, p) => a + p.value, 0);
+  return (
+    <Panel title={title} note={note}>
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <Donut parts={parts} size={96} />
+        <ul className="w-full space-y-1.5 sm:w-auto">
+          {parts.map((p) => (
+            <li
+              key={p.label}
+              className="flex items-center justify-between sm:justify-start gap-2 text-xs text-ink"
+            >
+              <span className="flex items-center gap-2">
+                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
+                {p.label}
+              </span>
+              <span className="tabular-nums text-ink-muted">
+                {int(p.value)} ({pct(total ? p.value / total : null)})
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Panel>
+  );
+}
+
+// ----- Halaman Utama -----
+export default async function HalamanNilai({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const filters = parseFiltersNilai(await searchParams);
+  const [options, data] = await Promise.all([getFilterOptionsNilai(), getNilaiData(filters)]);
+
+  const k = data.kpi;
+
+  // Warna untuk sebaran status nilai
+  const W = {
+    lengkap: SERIES.s1,       // kuning
+    tidakLengkap: SERIES.s2,  // kuning muda
+    null: SERIES.s3,          // oranye
+  };
+
+  // Donut jenis nilai — warna berganti sesuai urutan SERIES
+  const JENIS_COLORS = [
+    SERIES.s1, SERIES.s4, SERIES.s2, SERIES.s3,
+    "#A0C4FF", "#9BF6FF", "#CAFFBF", "#FFD6A5",
+    "#FFADAD", "#BDB2FF",
+  ];
+
+  return (
+    <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-3 sm:p-6 lg:p-8">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6">
+        <PageHeader
+          title="Nilai Mahasiswa"
+          note="Kelengkapan Data Nilai · snapshot database"
+        />
+
+        <FilterBarNilai filters={filters} options={options} />
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-5">
+          <KpiCard
+            label="Transaksi Mata Kuliah"
+            value={int(k.totalTransaksi)}
+            note="Akumulasi transaksi input nilai"
+          />
+          <KpiCard
+            label="Program Studi"
+            value={int(k.jumlahProdi)}
+            note="Terdata pada sistem"
+          />
+          <KpiCard
+            label="Persentase Nilai Lengkap"
+            value={pct(k.pctLengkap, 2)}
+            note={`${int(k.jumlahLengkap)} transaksi`}
+          />
+          <KpiCard
+            label="Persentase Nilai Tidak Lengkap"
+            value={pct(k.pctTidakLengkap, 2)}
+            note={`${int(k.jumlahTidakLengkap)} transaksi`}
+          />
+          <KpiCard
+            className="col-span-2 sm:col-span-1"
+            label="Persentase Nilai Null"
+            value={pct(k.pctNull, 2)}
+            note={`${int(k.jumlahNull)} transaksi`}
+          />
+        </div>
+
+        {/* Sebaran Nilai */}
+        <Section title="Sebaran Nilai">
+          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+            {/* Grouped bar: Sebaran Status Nilai per Fakultas */}
+            <Panel
+              title="Sebaran Status Nilai per Fakultas"
+              note={`${data.sebaranFakultas.length} fakultas berdata`}
+              aside={
+                <Legend
+                  items={[
+                    { label: "Lengkap", color: W.lengkap },
+                    { label: "Tidak Lengkap", color: W.tidakLengkap },
+                    { label: "Null", color: W.null },
+                  ]}
+                />
+              }
+            >
+              <GroupedBars
+                groups={data.sebaranFakultas.map((r) => r.fakultas)}
+                series={[
+                  {
+                    label: "Lengkap",
+                    values: data.sebaranFakultas.map((r) => r.lengkap),
+                    color: W.lengkap,
+                  },
+                  {
+                    label: "Tidak Lengkap",
+                    values: data.sebaranFakultas.map((r) => r.tidakLengkap),
+                    color: W.tidakLengkap,
+                  },
+                  {
+                    label: "Null",
+                    values: data.sebaranFakultas.map((r) => r.nilaiNull),
+                    color: W.null,
+                  },
+                ]}
+                height={180}
+              />
+            </Panel>
+
+            {/* Donut: Jenis Nilai */}
+            <DonutPanel
+              title="Jenis Nilai"
+              note={`${int(k.totalTransaksi)} transaksi`}
+              parts={data.jenisNilai.map((r, i) => ({
+                label: r.jenis,
+                value: r.jumlah,
+                color: JENIS_COLORS[i % JENIS_COLORS.length],
+              }))}
+            />
+          </div>
+        </Section>
+
+        {/* Rincian & Kategori */}
+        <Section title="Rincian & Kategori">
+          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+            {/* Table Summary per Prodi */}
+            <div className="flex flex-col rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
+              <h3 className="text-xs sm:text-sm font-bold text-ink mb-3">Table Summary</h3>
+              <p className="text-[10px] sm:text-[11px] text-ink-muted md:hidden mb-2">
+                ← Geser tabel ke samping →
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-surface-alt">
+                      <th
+                        className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[120px]`}
+                      >
+                        Fakultas ▲
+                      </th>
+                      <th className={`${cellTh} text-left min-w-[150px]`}>Program Studi</th>
+                      <th className={`${cellTh} text-right`}>Jumlah Nilai Lengkap</th>
+                      <th className={`${cellTh} text-right`}>Jumlah Nilai Tidak Lengkap</th>
+                      <th className={`${cellTh} text-right`}>Nilai Null</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.prodiSummary.map((r, i) => (
+                      <tr
+                        key={`${r.fakultas}-${r.prodi}-${i}`}
+                        className="border-b border-border last:border-0 hover:bg-surface-alt/50"
+                      >
+                        <td
+                          className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[120px] truncate`}
+                          title={r.fakultas}
+                        >
+                          {r.fakultas}
+                        </td>
+                        <td className={`${cellTd} text-left max-w-[150px] truncate`} title={r.prodi}>
+                          {r.prodi}
+                        </td>
+                        <td className={`${cellTd} text-right`}>{int(r.jumlahLengkap)}</td>
+                        <td className={`${cellTd} text-right`}>
+                          {r.jumlahTidakLengkap > 0 ? int(r.jumlahTidakLengkap) : "-"}
+                        </td>
+                        <td className={`${cellTd} text-right`}>
+                          {r.jumlahNull > 0 ? int(r.jumlahNull) : "-"}
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Baris total */}
+                    <tr className="border-t-2 border-border bg-surface-alt font-bold">
+                      <td
+                        className={`${cellTh} text-left sticky left-0 z-10 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
+                      >
+                        Total
+                      </td>
+                      <td className={cellTh}></td>
+                      <td className={`${cellTh} text-right`}>{int(k.jumlahLengkap)}</td>
+                      <td className={`${cellTh} text-right`}>{int(k.jumlahTidakLengkap)}</td>
+                      <td className={`${cellTh} text-right`}>{int(k.jumlahNull)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-2 text-center text-xs text-ink-muted">
+                Menampilkan {data.prodiSummary.length} program studi
+              </p>
+            </div>
+
+            {/* Donut: Kategori Nilai */}
+            <DonutPanel
+              title="Kategori Nilai"
+              note={`${int(k.totalTransaksi)} total transaksi`}
+              parts={data.kategoriNilai.map((r) => ({
+                label: r.label,
+                value: r.jumlah,
+                color:
+                  r.label === "Lengkap"
+                    ? W.lengkap
+                    : r.label === "Tidak Lengkap"
+                      ? W.tidakLengkap
+                      : W.null,
+              }))}
+            />
+          </div>
+        </Section>
+
+        {/* Footer info filter */}
+        <p className="text-[11px] sm:text-xs text-ink-muted">
+          Filter aktif: fakultas {filters.fakultas || SEMUA}, prodi {filters.prodi || SEMUA},
+          kategori {filters.kategoriNilai || SEMUA}, jenis {filters.jenisNilai || SEMUA}.
+        </p>
+      </div>
+    </div>
+  );
+}

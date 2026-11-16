@@ -2,7 +2,7 @@
 -- Port dari "dashboard smup sql/01_schema.sql" (MySQL) + "04_views.sql".
 -- Jalankan lewat `npm run db:setup` (idempoten: drop + create).
 
-DROP TABLE IF EXISTS pendaftaran, daya_tampung_jalur, daya_tampung, prodi_alias,
+DROP TABLE IF EXISTS nilai_mahasiswa, mahasiswa_aktif, pendaftaran, daya_tampung_jalur, daya_tampung, prodi_alias,
   program_studi, jalur_masuk, fakultas, jenjang CASCADE;
 
 CREATE TABLE jenjang (
@@ -94,3 +94,46 @@ CREATE INDEX ix_p_jalur ON pendaftaran (jalur_id);
 CREATE INDEX ix_p_fakultas ON pendaftaran (fakultas_id);
 CREATE INDEX ix_p_tgl ON pendaftaran (tgl_daftar);
 CREATE INDEX ix_p_nodaf ON pendaftaran (no_pendaftaran);
+
+-- ============================================================
+-- Tabel untuk Dashboard Herregistrasi dan KRS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS mahasiswa_aktif (
+  id                   integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  nim                  varchar(20) NOT NULL,
+  tahun_masuk          smallint NOT NULL,
+  prodi_id             integer REFERENCES program_studi(id),
+  fakultas_id          smallint REFERENCES fakultas(id),
+  jenjang_id           smallint REFERENCES jenjang(id),
+  status_herregistrasi varchar(30) NOT NULL,
+  jenis_herregistrasi  varchar(30),
+  status_krs           varchar(20) NOT NULL,
+  semester             smallint NOT NULL DEFAULT 1
+);
+
+CREATE INDEX IF NOT EXISTS ix_ma_fakultas ON mahasiswa_aktif (fakultas_id);
+CREATE INDEX IF NOT EXISTS ix_ma_prodi ON mahasiswa_aktif (prodi_id);
+CREATE INDEX IF NOT EXISTS ix_ma_status_h ON mahasiswa_aktif (status_herregistrasi);
+CREATE INDEX IF NOT EXISTS ix_ma_status_krs ON mahasiswa_aktif (status_krs);
+
+-- ============================================================
+-- Tabel untuk Dashboard Nilai Mahasiswa
+-- ============================================================
+CREATE TABLE IF NOT EXISTS nilai_mahasiswa (
+  id             integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  prodi_id       integer REFERENCES program_studi(id),
+  fakultas_id    smallint REFERENCES fakultas(id),
+  jenjang_id     smallint REFERENCES jenjang(id),
+  mata_kuliah    varchar(100) NOT NULL,
+  kategori_nilai varchar(30) NOT NULL DEFAULT 'Reguler',
+  jenis_nilai    varchar(10),
+  status_nilai   varchar(20) NOT NULL,
+  tahun_ajaran   varchar(10) NOT NULL DEFAULT '2024/2025',
+  semester       varchar(10) NOT NULL DEFAULT 'Ganjil'
+);
+
+CREATE INDEX IF NOT EXISTS ix_nm_prodi ON nilai_mahasiswa (prodi_id);
+CREATE INDEX IF NOT EXISTS ix_nm_fakultas ON nilai_mahasiswa (fakultas_id);
+CREATE INDEX IF NOT EXISTS ix_nm_status ON nilai_mahasiswa (status_nilai);
+CREATE INDEX IF NOT EXISTS ix_nm_jenis ON nilai_mahasiswa (jenis_nilai);
+CREATE INDEX IF NOT EXISTS ix_nm_kategori ON nilai_mahasiswa (kategori_nilai);
