@@ -1,6 +1,6 @@
 // Query functions untuk Dashboard Herregistrasi dan KRS.
 // Semua kalkulasi di SQL — bila database offline, fallback ke data mockup otomatis.
-import { pool } from "./db";
+import { getHerregPool } from "./db";
 import type {
   FiltersHerregistrasi,
   FilterOptionsHerregistrasi,
@@ -57,7 +57,7 @@ const DEFAULT_FAKULTAS = [
 
 async function isDbConnected(): Promise<boolean> {
   try {
-    const client = await pool.connect();
+    const client = await getHerregPool().connect();
     client.release();
     return true;
   } catch {
@@ -70,7 +70,7 @@ export async function getFilterOptionsHerregistrasi(): Promise<FilterOptionsHerr
     return { fakultas: DEFAULT_FAKULTAS };
   }
   try {
-    const { rows } = await pool.query(`
+    const { rows } = await getHerregPool().query(`
       SELECT json_agg(nama_lengkap ORDER BY id) AS fakultas
       FROM fakultas
     `);
@@ -143,6 +143,7 @@ export async function getHerregistrasiData(f: FiltersHerregistrasi): Promise<Her
     return MOCK_HERREGISTRASI;
   }
   try {
+    const pool = getHerregPool();
     const { where, params } = buildWhere(f);
 
     const [kpiQ, statusHQ, jenisHQ, statusKrsQ, distribusiQ, prodiQ] = await Promise.all([

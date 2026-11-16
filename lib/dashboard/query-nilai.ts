@@ -1,6 +1,6 @@
 // Query functions untuk Dashboard Nilai Mahasiswa (Kelengkapan Data Nilai).
 // Semua kalkulasi di SQL — bila database offline, fallback ke data mockup otomatis.
-import { pool } from "./db";
+import { getNilaiPool } from "./db";
 import type {
   FilterOptionsNilai,
   FiltersNilai,
@@ -75,7 +75,7 @@ const DEFAULT_OPTIONS_NILAI: FilterOptionsNilai = {
 
 async function isDbConnected(): Promise<boolean> {
   try {
-    const client = await pool.connect();
+    const client = await getNilaiPool().connect();
     client.release();
     return true;
   } catch {
@@ -88,7 +88,7 @@ export async function getFilterOptionsNilai(): Promise<FilterOptionsNilai> {
     return DEFAULT_OPTIONS_NILAI;
   }
   try {
-    const { rows } = await pool.query(`
+    const { rows } = await getNilaiPool().query(`
       SELECT json_build_object(
         'fakultas', (SELECT json_agg(nama_lengkap ORDER BY id) FROM fakultas),
         'prodi',    (SELECT json_agg(label ORDER BY label) FROM program_studi)
@@ -160,6 +160,7 @@ export async function getNilaiData(f: FiltersNilai): Promise<NilaiData> {
     return MOCK_NILAI;
   }
   try {
+    const pool = getNilaiPool();
     const { sql: where, params } = whereClause(f);
     const cte = baseCte(where);
 
