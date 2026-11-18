@@ -158,10 +158,6 @@ export default async function HalamanSmup({
         <Section title="Keketatan & Persaingan per Program Studi">
           <div className="rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
-              <p className="text-[11px] sm:text-xs text-ink-muted">
-                Pendaftar, diterima, dan registrasi di tabel ini memakai seluruh baris (termasuk tahun
-                teks) mengikuti tabel Calc_Prodi di workbook.
-              </p>
               <ScrollHint />
             </div>
             <div className="mt-2 overflow-x-auto">
