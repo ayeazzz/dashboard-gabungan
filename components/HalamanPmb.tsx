@@ -11,8 +11,8 @@ const WARNA = { menunggu: SERIES.s2, terverifikasi: SERIES.s1, ditolak: SERIES.s
 const tanggalPanjang = (tanggal: string | null) =>
   tanggal
     ? new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(
-        new Date(`${tanggal}T00:00:00`),
-      )
+      new Date(`${tanggal}T00:00:00`),
+    )
     : "-";
 
 export default async function HalamanPmb({
