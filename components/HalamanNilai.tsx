@@ -148,13 +148,13 @@ export default async function HalamanNilai({
 
         {/* Rincian & Kategori */}
         <Section title="Rincian & Kategori">
-          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+          <div className="grid gap-3 lg:grid-cols-[1.9fr_1fr]">
             {/* Table Summary per Prodi */}
             <Panel title="Table Summary" note="Kelengkapan nilai per fakultas dan program studi">
               <ScrollHint className="mb-2" />
-              <div className="overflow-x-auto">
+              <div className="max-h-[440px] overflow-auto rounded-lg border border-border">
                 <table className="w-full border-collapse">
-                  <thead>
+                  <thead className="sticky top-0 z-30 bg-surface-alt">
                     <tr className="bg-surface-alt">
                       <th
                         className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px]`}
@@ -162,9 +162,9 @@ export default async function HalamanNilai({
                         Fakultas ▲
                       </th>
                       <th className={`${cellTh} text-left min-w-[160px]`}>Program Studi</th>
-                      <th className={`${cellTh} text-right`}>Jumlah Nilai Lengkap</th>
-                      <th className={`${cellTh} text-right`}>Jumlah Nilai Tidak Lengkap</th>
-                      <th className={`${cellTh} text-right`}>Nilai Null</th>
+                      <th className={`${cellTh} min-w-[88px] text-right !whitespace-normal leading-tight`}>Jumlah Nilai Lengkap</th>
+                      <th className={`${cellTh} min-w-[88px] text-right !whitespace-normal leading-tight`}>Jumlah Nilai Tidak Lengkap</th>
+                      <th className={`${cellTh} min-w-[72px] text-right !whitespace-normal leading-tight`}>Nilai Null</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -192,7 +192,7 @@ export default async function HalamanNilai({
                       </tr>
                     ))}
                     {/* Baris total */}
-                    <tr className="border-t-2 border-border bg-surface-alt font-bold">
+                    <tr className="sticky bottom-0 z-20 border-t-2 border-border bg-surface-alt font-bold">
                       <td
                         className={`${cellTh} text-left sticky left-0 z-10 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
                       >

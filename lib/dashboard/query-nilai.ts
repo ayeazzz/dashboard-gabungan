@@ -149,10 +149,10 @@ const MOCK_NILAI: NilaiData = {
     { fakultas: "Ekonomi dan Bisnis", prodi: "Ilmu Ekonomi", jumlahLengkap: 2582, jumlahTidakLengkap: 1, jumlahNull: 13 },
   ],
   kategoriNilai: [
-    // Data dummy: jumlahnya harus sama dengan totalTransaksi (194.859).
-    { label: "Reguler", jumlah: 171000 },
-    { label: "Perbaikan", jumlah: 20100 },
-    { label: "Alih Kredit", jumlah: 3759 },
+    // Proporsi mengikuti db/seed_nilai.sql (85% / 12% / 3%); total = totalTransaksi (194.859).
+    { label: "Reguler", jumlah: 165630 },
+    { label: "Perbaikan", jumlah: 23383 },
+    { label: "Alih Kredit", jumlah: 5846 },
   ],
 };
 
