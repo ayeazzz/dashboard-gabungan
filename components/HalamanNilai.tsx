@@ -15,6 +15,13 @@ import { getFilterOptionsNilai, getNilaiData } from "@/lib/dashboard/query-nilai
 import type { FiltersNilai } from "@/lib/dashboard/types-nilai";
 import FilterBarNilai from "@/components/FilterBarNilai";
 
+// Warna donut Kategori Nilai (kolom kategori_nilai: Reguler / Perbaikan / Alih Kredit)
+const KATEGORI_COLORS: Record<string, string> = {
+  Reguler: SERIES.s1,
+  Perbaikan: SERIES.s3,
+  "Alih Kredit": "#5B8DB8",
+};
+
 // ----- Helpers -----
 
 function parseFiltersNilai(sp: Record<string, string | string[] | undefined>): FiltersNilai {
@@ -143,8 +150,7 @@ export default async function HalamanNilai({
         <Section title="Rincian & Kategori">
           <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr]">
             {/* Table Summary per Prodi */}
-            <div className="flex flex-col rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
-              <h3 className="text-xs sm:text-sm font-bold text-ink mb-3">Table Summary</h3>
+            <Panel title="Table Summary" note="Kelengkapan nilai per fakultas dan program studi">
               <ScrollHint className="mb-2" />
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
@@ -155,7 +161,7 @@ export default async function HalamanNilai({
                       >
                         Fakultas ▲
                       </th>
-                      <th className={`${cellTh} text-left min-w-[150px]`}>Program Studi</th>
+                      <th className={`${cellTh} text-left min-w-[160px]`}>Program Studi</th>
                       <th className={`${cellTh} text-right`}>Jumlah Nilai Lengkap</th>
                       <th className={`${cellTh} text-right`}>Jumlah Nilai Tidak Lengkap</th>
                       <th className={`${cellTh} text-right`}>Nilai Null</th>
@@ -168,12 +174,12 @@ export default async function HalamanNilai({
                         className="border-b border-border last:border-0 hover:bg-surface-alt/50"
                       >
                         <td
-                          className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] truncate`}
+                          className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px] max-w-[200px] !whitespace-normal leading-snug`}
                           title={r.fakultas}
                         >
                           {r.fakultas}
                         </td>
-                        <td className={`${cellTd} text-left max-w-[150px] truncate`} title={r.prodi}>
+                        <td className={`${cellTd} text-left min-w-[160px] max-w-[260px] !whitespace-normal leading-snug`} title={r.prodi}>
                           {r.prodi}
                         </td>
                         <td className={`${cellTd} text-right`}>{int(r.jumlahLengkap)}</td>
@@ -203,21 +209,18 @@ export default async function HalamanNilai({
               <p className="mt-2 text-center text-xs text-ink-muted">
                 Menampilkan {data.prodiSummary.length} program studi
               </p>
-            </div>
+            </Panel>
 
             {/* Donut: Kategori Nilai */}
             <DonutPanel
               title="Kategori Nilai"
               note={`${int(k.totalTransaksi)} total transaksi`}
+              stacked
+              size={168}
               parts={data.kategoriNilai.map((r) => ({
                 label: r.label,
                 value: r.jumlah,
-                color:
-                  r.label === "Lengkap"
-                    ? W.lengkap
-                    : r.label === "Tidak Lengkap"
-                      ? W.tidakLengkap
-                      : W.null,
+                color: KATEGORI_COLORS[r.label] ?? SERIES.s4,
               }))}
             />
           </div>

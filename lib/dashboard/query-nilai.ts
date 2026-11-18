@@ -149,9 +149,10 @@ const MOCK_NILAI: NilaiData = {
     { fakultas: "Ekonomi dan Bisnis", prodi: "Ilmu Ekonomi", jumlahLengkap: 2582, jumlahTidakLengkap: 1, jumlahNull: 13 },
   ],
   kategoriNilai: [
-    { label: "Lengkap", jumlah: 192396 },
-    { label: "Tidak Lengkap", jumlah: 2052 },
-    { label: "Null", jumlah: 411 },
+    // Data dummy: jumlahnya harus sama dengan totalTransaksi (194.859).
+    { label: "Reguler", jumlah: 171000 },
+    { label: "Perbaikan", jumlah: 20100 },
+    { label: "Alih Kredit", jumlah: 3759 },
   ],
 };
 
@@ -226,14 +227,14 @@ export async function getNilaiData(f: FiltersNilai): Promise<NilaiData> {
       ),
       pool.query<{ label: string; jumlah: number }>(
         `${cte}
-        SELECT status_nilai AS label, count(*)::int AS jumlah
+        SELECT kategori_nilai AS label, count(*)::int AS jumlah
         FROM base
-        GROUP BY status_nilai
+        GROUP BY kategori_nilai
         ORDER BY
-          CASE status_nilai
-            WHEN 'Lengkap'        THEN 1
-            WHEN 'Tidak Lengkap'  THEN 2
-            WHEN 'Null'           THEN 3
+          CASE kategori_nilai
+            WHEN 'Reguler'      THEN 1
+            WHEN 'Perbaikan'    THEN 2
+            WHEN 'Alih Kredit'  THEN 3
             ELSE 4
           END`,
         params,

@@ -61,11 +61,14 @@ export function DonutPanel({
   note,
   parts,
   size = 112,
+  stacked = false,
 }: {
   title: string;
   note?: string;
   parts: (Part & { label: string })[];
   size?: number;
+  // stacked: donut besar di atas, legend di bawah (untuk panel tinggi / kolom sempit).
+  stacked?: boolean;
 }) {
   const total = parts.reduce((a, p) => a + p.value, 0);
   return (
@@ -73,9 +76,9 @@ export function DonutPanel({
       {total === 0 ? (
         <p className="py-6 text-center text-xs text-ink-muted">Tidak ada data untuk filter ini.</p>
       ) : (
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-4">
+        <div className={`flex flex-col items-center gap-4 ${stacked ? "" : "sm:flex-row"}`}>
           <div role="img" aria-label={`${title}: ${parts.map((p) => `${p.label} ${int(p.value)}`).join(", ")}`}>
-            <Donut parts={parts} size={size} thickness={22} centerLabel={int(total)} />
+            <Donut parts={parts} size={size} thickness={Math.round(size / 5)} centerLabel={int(total)} />
           </div>
           <ul className="w-full min-w-0 flex-1 space-y-2">
             {parts.map((p) => (
@@ -197,7 +200,7 @@ export function GroupedBars({
       <div className="overflow-x-auto pb-1">
         <div className="flex min-w-max items-end gap-2 border-b border-border" style={{ height }}>
           {groups.map((g, i) => (
-            <div key={g} className="flex h-full w-12 sm:w-14 shrink-0 flex-col justify-end">
+            <div key={g} className="flex h-full w-16 sm:w-20 shrink-0 flex-col justify-end">
               <div className="flex flex-1 items-end justify-center gap-[2px] sm:gap-[3px]">
                 {series.map((s) => (
                   <span
@@ -208,7 +211,7 @@ export function GroupedBars({
                   />
                 ))}
               </div>
-              <span className="mt-1.5 truncate text-center text-[10px] sm:text-[11px] text-ink-muted" title={g}>
+              <span className="mt-1.5 line-clamp-2 min-h-[2.5em] break-words text-center text-[10px] sm:text-[11px] leading-tight text-ink-muted" title={g}>
                 {g}
               </span>
             </div>
