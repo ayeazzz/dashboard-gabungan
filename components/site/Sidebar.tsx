@@ -191,7 +191,7 @@ export default function Sidebar({
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
             </svg>
-            {!isCollapsed && <span>Ciutkan Sidebar</span>}
+            {!isCollapsed && <span>Minimize Sidebar</span>}
           </button>
         </div>
       )}
