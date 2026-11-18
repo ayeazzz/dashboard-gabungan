@@ -1,36 +1,98 @@
 // Primitif chart sederhana (div + SVG). Sengaja tanpa library chart:
 // kebutuhan di sini cuma donut, bar, dan stacked bar.
-import { SERIES, int } from "@/lib/dashboard/format";
+import { Panel } from "@/components/dashboard/ui";
+import { SERIES, int, pct } from "@/lib/dashboard/format";
 
 type Part = { value: number; color: string };
 
-export function Donut({ parts, size = 96, thickness = 20 }: { parts: Part[]; size?: number; thickness?: number }) {
+export function Donut({
+  parts,
+  size = 96,
+  thickness = 20,
+  centerLabel,
+}: {
+  parts: Part[];
+  size?: number;
+  thickness?: number;
+  centerLabel?: string;
+}) {
   const r = (size - thickness) / 2;
   const c = 2 * Math.PI * r;
-  const sum = parts.reduce((a, p) => a + p.value, 0) || 1;
+  const sum = parts.reduce((a, p) => a + p.value, 0);
   // Offset tiap segmen dihitung sebagai prefix-sum, tanpa variabel yang diubah-ubah saat render.
-  const lens = parts.map((p) => (p.value / sum) * c);
+  const lens = parts.map((p) => (sum > 0 ? (p.value / sum) * c : 0));
   const arcs = lens.map((len, i) => ({
     len,
     start: lens.slice(0, i).reduce((a, b) => a + b, 0),
     color: parts[i].color,
   }));
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90 shrink-0" aria-hidden>
-      {arcs.map((a, i) => (
-        <circle
-          key={i}
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke={a.color}
-          strokeWidth={thickness}
-          strokeDasharray={`${a.len} ${c - a.len}`}
-          strokeDashoffset={-a.start}
-        />
-      ))}
-    </svg>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth={thickness} />
+        {arcs
+          .filter((a) => a.len > 0)
+          .map((a, i) => (
+            <circle
+              key={i}
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              stroke={a.color}
+              strokeWidth={thickness}
+              strokeDasharray={`${a.len} ${c - a.len}`}
+              strokeDashoffset={-a.start}
+            />
+          ))}
+      </svg>
+      {centerLabel && (
+        <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-[11px] font-bold leading-tight text-ink tabular-nums">
+          {centerLabel}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// Panel donut bersama untuk semua halaman: donut + legend (jumlah dan persen).
+export function DonutPanel({
+  title,
+  note,
+  parts,
+  size = 112,
+}: {
+  title: string;
+  note?: string;
+  parts: (Part & { label: string })[];
+  size?: number;
+}) {
+  const total = parts.reduce((a, p) => a + p.value, 0);
+  return (
+    <Panel title={title} note={note}>
+      {total === 0 ? (
+        <p className="py-6 text-center text-xs text-ink-muted">Tidak ada data untuk filter ini.</p>
+      ) : (
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-4">
+          <div role="img" aria-label={`${title}: ${parts.map((p) => `${p.label} ${int(p.value)}`).join(", ")}`}>
+            <Donut parts={parts} size={size} thickness={22} centerLabel={int(total)} />
+          </div>
+          <ul className="w-full min-w-0 flex-1 space-y-2">
+            {parts.map((p) => (
+              <li key={p.label} className="flex items-start justify-between gap-3 text-xs text-ink">
+                <span className="flex min-w-0 items-start gap-2">
+                  <i className="mt-[3px] size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
+                  <span className="leading-snug">{p.label}</span>
+                </span>
+                <span className="shrink-0 text-right tabular-nums text-ink-muted">
+                  {int(p.value)} ({pct(p.value / total)})
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Panel>
   );
 }
 
@@ -154,7 +216,7 @@ export function GroupedBars({
         </div>
       </div>
       <p className="mt-1.5 text-right text-[10px] sm:text-[11px] text-ink-muted md:hidden">
-        ← Geser grafik untuk melihat 19 fakultas →
+        ← Geser grafik untuk melihat {groups.length} fakultas →
       </p>
     </div>
   );

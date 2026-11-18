@@ -1,15 +1,16 @@
 // Server Component — tidak ada "use client".
 // Semua kalkulasi sudah di SQL; komponen ini hanya merender hasilnya.
-import { Donut, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { DonutPanel, GroupedBars, Legend } from "@/components/dashboard/charts";
 import {
   KpiCard,
   PageHeader,
   Panel,
+  ScrollHint,
   Section,
   cellTd,
   cellTh,
 } from "@/components/dashboard/ui";
-import { SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
+import { DONUT_COLORS, SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
 import { getFilterOptionsNilai, getNilaiData } from "@/lib/dashboard/query-nilai";
 import type { FiltersNilai } from "@/lib/dashboard/types-nilai";
 import FilterBarNilai from "@/components/FilterBarNilai";
@@ -26,42 +27,6 @@ function parseFiltersNilai(sp: Record<string, string | string[] | undefined>): F
   };
 }
 
-// Donut panel reusable
-function DonutPanel({
-  title,
-  note,
-  parts,
-}: {
-  title: string;
-  note?: string;
-  parts: { label: string; value: number; color: string }[];
-}) {
-  const total = parts.reduce((a, p) => a + p.value, 0);
-  return (
-    <Panel title={title} note={note}>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <Donut parts={parts} size={96} />
-        <ul className="w-full space-y-1.5 sm:w-auto">
-          {parts.map((p) => (
-            <li
-              key={p.label}
-              className="flex items-center justify-between sm:justify-start gap-2 text-xs text-ink"
-            >
-              <span className="flex items-center gap-2">
-                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
-                {p.label}
-              </span>
-              <span className="tabular-nums text-ink-muted">
-                {int(p.value)} ({pct(total ? p.value / total : null)})
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Panel>
-  );
-}
-
 // ----- Halaman Utama -----
 export default async function HalamanNilai({
   searchParams,
@@ -76,16 +41,10 @@ export default async function HalamanNilai({
   // Warna untuk sebaran status nilai
   const W = {
     lengkap: SERIES.s1,       // kuning
-    tidakLengkap: SERIES.s2,  // kuning muda
-    null: SERIES.s3,          // oranye
+    tidakLengkap: SERIES.s3,  // oranye
+    null: "#9CA3AF",          // abu-abu
   };
 
-  // Donut jenis nilai — warna berganti sesuai urutan SERIES
-  const JENIS_COLORS = [
-    SERIES.s1, SERIES.s4, SERIES.s2, SERIES.s3,
-    "#A0C4FF", "#9BF6FF", "#CAFFBF", "#FFD6A5",
-    "#FFADAD", "#BDB2FF",
-  ];
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-3 sm:p-6 lg:p-8">
@@ -174,7 +133,7 @@ export default async function HalamanNilai({
               parts={data.jenisNilai.map((r, i) => ({
                 label: r.jenis,
                 value: r.jumlah,
-                color: JENIS_COLORS[i % JENIS_COLORS.length],
+                color: DONUT_COLORS[i % DONUT_COLORS.length],
               }))}
             />
           </div>
@@ -186,15 +145,13 @@ export default async function HalamanNilai({
             {/* Table Summary per Prodi */}
             <div className="flex flex-col rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
               <h3 className="text-xs sm:text-sm font-bold text-ink mb-3">Table Summary</h3>
-              <p className="text-[10px] sm:text-[11px] text-ink-muted md:hidden mb-2">
-                ← Geser tabel ke samping →
-              </p>
+              <ScrollHint className="mb-2" />
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-surface-alt">
                       <th
-                        className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[120px]`}
+                        className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px]`}
                       >
                         Fakultas ▲
                       </th>
@@ -211,7 +168,7 @@ export default async function HalamanNilai({
                         className="border-b border-border last:border-0 hover:bg-surface-alt/50"
                       >
                         <td
-                          className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[120px] truncate`}
+                          className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] truncate`}
                           title={r.fakultas}
                         >
                           {r.fakultas}

@@ -1,6 +1,6 @@
-import { BarList, Donut, GroupedBars, Legend } from "@/components/dashboard/charts";
-import { KpiCard, PageHeader, Panel, PanelGrid, RowCount, Section, cellTd, cellTh } from "@/components/dashboard/ui";
-import { SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
+import { BarList, DonutPanel, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { KpiCard, PageHeader, Panel, PanelGrid, RowCount, Section, cellTd, cellTh, ScrollHint } from "@/components/dashboard/ui";
+import { DONUT_COLORS, SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
 import { getFilterOptionsHerregistrasi, getHerregistrasiData } from "@/lib/dashboard/query-herregistrasi";
 import type { FiltersHerregistrasi } from "@/lib/dashboard/types-herregistrasi";
 import FilterBarHerregistrasi from "./FilterBarHerregistrasi";
@@ -18,15 +18,6 @@ function parseFiltersHerregistrasi(
   };
 }
 
-// ─── Warna per jenis herregistrasi ───────────────────────────────────────────
-
-const JENIS_COLOR: Record<string, string> = {
-  "Bayar Mandiri":    SERIES.s1,
-  "Beasiswa":         SERIES.s3,
-  "Cuti":             SERIES.s4,
-  "Rp. 0 Pembebasan": "#9CA3AF",
-  "Penangguhan":      "#6B7280",
-};
 
 // ─── Page Component ───────────────────────────────────────────────────────────
 
@@ -51,10 +42,10 @@ export default async function HalamanHerregistrasi({
   }));
 
   // Jenis Herregistrasi untuk donut
-  const jenisHParts = data.jenisHerregistrasi.map((r) => ({
+  const jenisHParts = data.jenisHerregistrasi.map((r, i) => ({
     label: r.label,
     value: r.jumlah,
-    color: JENIS_COLOR[r.label] ?? SERIES.s2,
+    color: DONUT_COLORS[i % DONUT_COLORS.length],
   }));
 
   // Status KRS untuk BarList
@@ -103,7 +94,7 @@ export default async function HalamanHerregistrasi({
         </div>
 
         {/* Ringkasan & Status */}
-        <Section title="Ringkasan &amp; Status">
+        <Section title="Ringkasan & Status">
           <PanelGrid cols={3}>
             {/* Status Herregistrasi – donut */}
             <DonutPanel
@@ -120,7 +111,7 @@ export default async function HalamanHerregistrasi({
             />
 
             {/* Status KRS – bar */}
-            <Panel title="Status KRS" note="KRS vs Tidak KRS">
+            <Panel title="Status KRS" note="KRS vs Tidak KRS · dari herregistrasi selain Cuti">
               <BarList items={krsItems} showValue labelWidth="6rem" />
             </Panel>
           </PanelGrid>
@@ -155,14 +146,12 @@ export default async function HalamanHerregistrasi({
         {/* Table Summary */}
         <Section title="Table Summary">
           <div className="rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
-            <div className="flex justify-end mb-2 md:hidden">
-              <span className="text-[10px] text-ink-muted">← Geser tabel ke samping →</span>
-            </div>
+            <ScrollHint className="mb-2 text-right" />
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-surface-alt">
-                    <th className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[160px]`}>
+                    <th className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px]`}>
                       Program Studi ↑
                     </th>
                     <th className={`${cellTh} text-left`}>Jenjang</th>
@@ -173,7 +162,7 @@ export default async function HalamanHerregistrasi({
                 <tbody>
                   {data.prodiSummary.map((r) => (
                     <tr key={`${r.prodi}-${r.jenjang}`} className="border-b border-border last:border-0 hover:bg-surface-alt/50">
-                      <td className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[160px] sm:max-w-none truncate`}>
+                      <td className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] sm:max-w-none truncate`}>
                         {r.prodi}
                       </td>
                       <td className={`${cellTd} text-left`}>{r.jenjang}</td>
@@ -209,36 +198,3 @@ export default async function HalamanHerregistrasi({
   );
 }
 
-// ─── Donut Panel helper ───────────────────────────────────────────────────────
-
-function DonutPanel({
-  title,
-  note,
-  parts,
-}: {
-  title: string;
-  note?: string;
-  parts: { label: string; value: number; color: string }[];
-}) {
-  const total = parts.reduce((a, p) => a + p.value, 0);
-  return (
-    <Panel title={title} note={note}>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <Donut parts={parts} size={96} />
-        <ul className="w-full space-y-1.5 sm:w-auto">
-          {parts.map((p) => (
-            <li key={p.label} className="flex items-center justify-between sm:justify-start gap-2 text-xs text-ink">
-              <span className="flex items-center gap-2">
-                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
-                {p.label}
-              </span>
-              <span className="tabular-nums text-ink-muted">
-                {int(p.value)} ({pct(total ? p.value / total : null)})
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Panel>
-  );
-}

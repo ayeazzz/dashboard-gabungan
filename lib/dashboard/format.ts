@@ -8,6 +8,12 @@ export const SERIES = {
   s4: "#BFA73C",
 };
 
+// Palet donut dengan banyak kategori: kontras antar-segmen dijaga, kuning tema tetap di depan.
+export const DONUT_COLORS = [
+  "#E3C744", "#EC8F63", "#5B8DB8", "#8E6C8A", "#7BAE7F",
+  "#9CA3AF", "#C0504D", "#4F5D75", "#D4A5A5", "#BFA73C",
+];
+
 // Merah "Ditolak" dari mockup — beda dari --color-accent-red (#b0061c).
 export const DANGER = "#D64045";
 

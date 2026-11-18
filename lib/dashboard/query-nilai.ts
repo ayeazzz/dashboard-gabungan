@@ -125,13 +125,13 @@ const MOCK_NILAI: NilaiData = {
     { fakultas: "MIPA", lengkap: 18200, tidakLengkap: 190, nilaiNull: 39 },
   ],
   jenisNilai: [
-    { jenis: "A", jumlah: 92020 },
+    { jenis: "A", jumlah: 93948 },
     { jenis: "B", jumlah: 41200 },
     { jenis: "A-", jumlah: 37840 },
     { jenis: "B+", jumlah: 10160 },
     { jenis: "C", jumlah: 3800 },
     { jenis: "B-", jumlah: 4300 },
-    { jenis: "Null", jumlah: 2340 },
+    { jenis: "Null", jumlah: 411 },
     { jenis: "C+", jumlah: 1600 },
     { jenis: "E", jumlah: 900 },
     { jenis: "K", jumlah: 700 },
@@ -149,9 +149,9 @@ const MOCK_NILAI: NilaiData = {
     { fakultas: "Ekonomi dan Bisnis", prodi: "Ilmu Ekonomi", jumlahLengkap: 2582, jumlahTidakLengkap: 1, jumlahNull: 13 },
   ],
   kategoriNilai: [
-    { label: "Lengkap", jumlah: 192400 },
-    { label: "Tidak Lengkap", jumlah: 2050 },
-    { label: "Null", jumlah: 410 },
+    { label: "Lengkap", jumlah: 192396 },
+    { label: "Tidak Lengkap", jumlah: 2052 },
+    { label: "Null", jumlah: 411 },
   ],
 };
 

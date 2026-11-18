@@ -33,7 +33,7 @@ export function Panel({
     <div className={`flex min-w-0 flex-col rounded-panel bg-surface p-3.5 sm:p-5 shadow-card ${className}`}>
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1.5 sm:gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="text-xs sm:text-sm font-bold text-ink truncate sm:whitespace-normal">{title}</h3>
+          <h3 className="text-xs sm:text-sm font-bold text-ink leading-snug">{title}</h3>
           {note && <p className="mt-0.5 text-[11px] sm:text-xs text-ink-muted leading-relaxed">{note}</p>}
         </div>
         {aside && <div className="shrink-0 pt-1 sm:pt-0">{aside}</div>}
@@ -95,6 +95,10 @@ export function PanelGrid({ cols = 3, children }: { cols?: 2 | 3; children: Reac
       {children}
     </div>
   );
+}
+
+export function ScrollHint({ className = "" }: { className?: string }) {
+  return <p className={`text-[10px] text-ink-muted md:hidden ${className}`}>← Geser tabel ke samping →</p>;
 }
 
 export function RowCount({ shown }: { shown: number }) {

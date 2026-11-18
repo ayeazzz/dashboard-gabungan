@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { BarList, Donut, GroupedBars, Legend } from "@/components/dashboard/charts";
-import { KpiCard, PageHeader, Panel, PanelGrid, RowCount, Section, cellTd, cellTh } from "@/components/dashboard/ui";
+import { BarList, DonutPanel, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { KpiCard, PageHeader, Panel, PanelGrid, RowCount, Section, cellTd, cellTh, ScrollHint } from "@/components/dashboard/ui";
 import { SEMUA, SERIES, dec, int, parseFilters, pct } from "@/lib/dashboard/format";
 import { getFilterOptions, getSmupData } from "@/lib/dashboard/query";
 import type { Filters } from "@/lib/dashboard/types";
@@ -77,7 +77,7 @@ export default async function HalamanSmup({
               note="Daftar ulang dari yang diterima"
               parts={[
                 { label: "Registrasi", value: k.registrasi, color: SERIES.s1 },
-                { label: "Belum Registrasi", value: belumRegistrasi, color: SERIES.s2 },
+                { label: "Belum Registrasi", value: belumRegistrasi, color: SERIES.s3 },
               ]}
             />
             <Panel title="Distribusi Jalur Masuk (Pendaftar)" note="Seluruh jalur masuk">
@@ -162,9 +162,7 @@ export default async function HalamanSmup({
                 Pendaftar, diterima, dan registrasi di tabel ini memakai seluruh baris (termasuk tahun
                 teks) mengikuti tabel Calc_Prodi di workbook.
               </p>
-              <p className="text-[10px] sm:text-[11px] text-ink-muted md:hidden">
-                ← Geser tabel ke samping →
-              </p>
+              <ScrollHint />
             </div>
             <div className="mt-2 overflow-x-auto">
               <table className="w-full border-collapse">
@@ -220,7 +218,7 @@ export default async function HalamanSmup({
           <div className="rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
             <div className="flex justify-between items-center mb-2 md:hidden">
               <span className="text-[10px] text-ink-muted">Tabel Historis Multi-Tahun</span>
-              <span className="text-[10px] text-ink-muted">← Geser tabel ke samping →</span>
+              <ScrollHint />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
@@ -297,37 +295,5 @@ export default async function HalamanSmup({
         </p>
       </div>
     </div>
-  );
-}
-
-function DonutPanel({
-  title,
-  note,
-  parts,
-}: {
-  title: string;
-  note?: string;
-  parts: { label: string; value: number; color: string }[];
-}) {
-  const total = parts.reduce((a, p) => a + p.value, 0);
-  return (
-    <Panel title={title} note={note}>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <Donut parts={parts} size={96} />
-        <ul className="w-full space-y-1.5 sm:w-auto">
-          {parts.map((p) => (
-            <li key={p.label} className="flex items-center justify-between sm:justify-start gap-2 text-xs text-ink">
-              <span className="flex items-center gap-2">
-                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
-                {p.label}
-              </span>
-              <span className="tabular-nums text-ink-muted">
-                {int(p.value)} ({pct(total ? p.value / total : null)})
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Panel>
   );
 }

@@ -86,7 +86,7 @@ const MOCK_HERREGISTRASI: HerregistrasiData = {
     jumlahMahasiswa: 31770,
     jumlahHerregistrasi: 30130,
     pctHerregistrasi: 0.9483,
-    jumlahKrs: 28800,
+    jumlahKrs: 28249,
     pctKrs: 0.9399,
   },
   statusHerregistrasi: [
@@ -94,15 +94,15 @@ const MOCK_HERREGISTRASI: HerregistrasiData = {
     { label: "Tidak Herregistrasi", jumlah: 1640 },
   ],
   jenisHerregistrasi: [
-    { label: "Bayar Mandiri", jumlah: 25300 },
+    { label: "Bayar Mandiri", jumlah: 25315 },
     { label: "Beasiswa", jumlah: 4650 },
     { label: "Cuti", jumlah: 75 },
     { label: "Rp. 0 Pembebasan", jumlah: 54 },
     { label: "Penangguhan", jumlah: 36 },
   ],
   statusKrs: [
-    { label: "KRS", jumlah: 28800 },
-    { label: "Tidak KRS", jumlah: 1900 },
+    { label: "KRS", jumlah: 28249 },
+    { label: "Tidak KRS", jumlah: 1806 },
   ],
   distribusiFakultas: [
     { fakultas: "11 - Hukum", jumlahMahasiswa: 2150, herregistrasi: 2040, krs: 1920 },
@@ -179,6 +179,8 @@ export async function getHerregistrasiData(f: FiltersHerregistrasi): Promise<Her
         `SELECT ma.status_krs AS label, count(*)::int AS jumlah
         ${JOINS}
         ${where}
+        AND ma.status_herregistrasi = 'Herregistrasi'
+        AND ma.jenis_herregistrasi <> 'Cuti'
         GROUP BY ma.status_krs
         ORDER BY jumlah DESC`,
         params,
