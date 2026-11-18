@@ -9,4 +9,4 @@ export const dashboardLinks = [
   { label: "Nilai", href: "/nilai" },
 ];
 
-export const copyright = "© 2026 Nama Institusi. Seluruh hak cipta dilindungi.";
+export const copyright = "© 2026 Universitas Padjadjaran. Seluruh hak cipta dilindungi.";
