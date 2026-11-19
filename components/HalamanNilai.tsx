@@ -1,6 +1,8 @@
 // Server Component — tidak ada "use client".
 // Semua kalkulasi sudah di SQL; komponen ini hanya merender hasilnya.
-import { DonutPanel, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { GroupedBars, Legend } from "@/components/dashboard/charts";
+import { DonutPanel } from "@/components/dashboard/DonutPanel";
+import { KET_JENIS_NILAI, KET_KATEGORI_NILAI, KET_STATUS_NILAI } from "@/lib/dashboard/keterangan";
 import {
   KpiCard,
   PageHeader,
@@ -8,17 +10,10 @@ import {
   Section,
 } from "@/components/dashboard/ui";
 import { TableNilaiProdi } from "@/components/dashboard/TableNilaiProdi";
-import { DONUT_COLORS, SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
+import { COLOR_JENIS_NILAI, COLOR_KATEGORI_NILAI, DONUT_COLORS, SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
 import { getFilterOptionsNilai, getNilaiData } from "@/lib/dashboard/query-nilai";
 import type { FiltersNilai } from "@/lib/dashboard/types-nilai";
 import FilterBarNilai from "@/components/FilterBarNilai";
-
-// Warna donut Kategori Nilai (kolom kategori_nilai: Reguler / Perbaikan / Alih Kredit)
-const KATEGORI_COLORS: Record<string, string> = {
-  Reguler: SERIES.s1,
-  Perbaikan: SERIES.s3,
-  "Alih Kredit": "#5B8DB8",
-};
 
 // ----- Helpers -----
 
@@ -135,11 +130,12 @@ export default async function HalamanNilai({
             {/* Donut: Jenis Nilai */}
             <DonutPanel
               title="Jenis Nilai"
-              note={`${int(k.totalTransaksi)} transaksi`}
+              note={`${int(k.totalTransaksi)} transaksi · arahkan kursor untuk penjelasan`}
+              descriptions={KET_JENIS_NILAI}
               parts={data.jenisNilai.map((r, i) => ({
                 label: r.jenis,
                 value: r.jumlah,
-                color: DONUT_COLORS[i % DONUT_COLORS.length],
+                color: COLOR_JENIS_NILAI[r.jenis] ?? DONUT_COLORS[i % DONUT_COLORS.length],
               }))}
             />
           </div>
@@ -168,13 +164,14 @@ export default async function HalamanNilai({
             {/* Donut: Kategori Nilai */}
             <DonutPanel
               title="Kategori Nilai"
-              note={`${int(k.totalTransaksi)} total transaksi`}
+              note={`${int(k.totalTransaksi)} total transaksi · arahkan kursor untuk penjelasan`}
+              descriptions={{ ...KET_KATEGORI_NILAI, ...KET_STATUS_NILAI }}
               stacked
               size={168}
               parts={data.kategoriNilai.map((r) => ({
                 label: r.label,
                 value: r.jumlah,
-                color: KATEGORI_COLORS[r.label] ?? SERIES.s4,
+                color: COLOR_KATEGORI_NILAI[r.label] ?? SERIES.s4,
               }))}
             />
           </div>

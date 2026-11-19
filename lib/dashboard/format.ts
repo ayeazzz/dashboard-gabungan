@@ -14,6 +14,15 @@ export const DONUT_COLORS = [
   "#9CA3AF", "#C0504D", "#4F5D75", "#D4A5A5", "#BFA73C",
 ];
 
+// Warna tetap per label, supaya segmen yang berdampingan selalu mudah dibedakan.
+export const COLOR_JENIS_NILAI: Record<string, string> = {
+  A: "#E3C744", "A-": "#EC8F63", "B+": "#5B8DB8", B: "#7BAE7F", "B-": "#8E6C8A",
+  "C+": "#4F5D75", C: "#D4A5A5", D: "#CBD5E1", E: "#C0504D", K: "#B08D57", Null: "#6B7280",
+};
+export const COLOR_KATEGORI_NILAI: Record<string, string> = {
+  Reguler: "#E3C744", Perbaikan: "#EC8F63", "Alih Kredit": "#5B8DB8",
+};
+
 // Merah "Ditolak" dari mockup — beda dari --color-accent-red (#b0061c).
 export const DANGER = "#D64045";
 

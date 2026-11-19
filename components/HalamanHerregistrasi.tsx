@@ -1,4 +1,6 @@
-import { BarList, Donut, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { BarList, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { DonutPanel } from "@/components/dashboard/DonutPanel";
+import { KET_HERREG } from "@/lib/dashboard/keterangan";
 import { KpiCard, PageHeader, Panel, PanelGrid, Section } from "@/components/dashboard/ui";
 import { TableHerregistrasiProdi } from "@/components/dashboard/TableHerregistrasiProdi";
 import { SERIES, int, pct } from "@/lib/dashboard/format";
@@ -109,6 +111,7 @@ export default async function HalamanHerregistrasi({
             {/* Donut: Status Herregistrasi */}
             <DonutPanel
               title="Status Herregistrasi"
+              descriptions={KET_HERREG}
               note="Herregistrasi vs tidak herregistrasi"
               parts={statusHParts}
             />
@@ -116,6 +119,7 @@ export default async function HalamanHerregistrasi({
             {/* Donut: Jenis Herregistrasi */}
             <DonutPanel
               title="Jenis Herregistrasi"
+              descriptions={KET_HERREG}
               note="Bayar Mandiri, Beasiswa, Cuti, Rp. 0 Pembebasan, Penangguhan"
               parts={jenisHParts}
             />
@@ -182,39 +186,3 @@ export default async function HalamanHerregistrasi({
   );
 }
 
-// ─── Donut Panel helper ──────────────────────────────────────────────────────
-
-function DonutPanel({
-  title,
-  note,
-  parts,
-}: {
-  title: string;
-  note?: string;
-  parts: { label: string; value: number; color: string }[];
-}) {
-  const total = parts.reduce((a, p) => a + p.value, 0);
-  return (
-    <Panel title={title} note={note}>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4 min-w-0">
-        <Donut parts={parts} size={96} />
-        <ul className="w-full space-y-1.5 sm:w-auto min-w-0 flex-1">
-          {parts.map((p) => (
-            <li
-              key={p.label}
-              className="flex items-center justify-between gap-2 text-xs text-ink min-w-0"
-            >
-              <span className="flex items-center gap-1.5 min-w-0 truncate">
-                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
-                <span className="truncate">{p.label}</span>
-              </span>
-              <span className="tabular-nums text-ink-muted shrink-0 text-right text-[11px] sm:text-xs">
-                {int(p.value)} ({pct(total ? p.value / total : null)})
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Panel>
-  );
-}

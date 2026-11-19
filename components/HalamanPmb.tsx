@@ -1,5 +1,7 @@
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { DailyBars, Donut, Legend, StackedBarList } from "@/components/dashboard/charts";
+import { DailyBars, Legend, StackedBarList } from "@/components/dashboard/charts";
+import { DonutPanel } from "@/components/dashboard/DonutPanel";
+import { KET_PMB } from "@/lib/dashboard/keterangan";
 import { KpiCard, PageHeader, Panel, Section } from "@/components/dashboard/ui";
 import { TableVerifikasiProdi } from "@/components/dashboard/TableVerifikasiProdi";
 import { SERIES, dec, int, parseFilters, pct } from "@/lib/dashboard/format";
@@ -88,39 +90,16 @@ export default async function HalamanPmb({
             <DailyBars data={data.harian} avg={k.rataHarian} />
           </Panel>
 
-          <Panel title="Tracking Verifikasi Berkas" note={`${int(totalBerstatus)} baris berstatus`}>
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center min-w-0">
-              <Donut
-                parts={[
-                  { value: k.menunggu, color: WARNA.menunggu },
-                  { value: k.terverifikasi, color: WARNA.terverifikasi },
-                  { value: k.ditolak, color: WARNA.ditolak },
-                ]}
-                size={104}
-                thickness={22}
-              />
-              <ul className="w-full space-y-1.5 sm:w-auto min-w-0 flex-1">
-                {[
-                  { label: "Menunggu", value: k.menunggu, color: WARNA.menunggu },
-                  { label: "Terverifikasi", value: k.terverifikasi, color: WARNA.terverifikasi },
-                  { label: "Ditolak", value: k.ditolak, color: WARNA.ditolak },
-                ].map((s) => (
-                  <li
-                    key={s.label}
-                    className="flex items-center justify-between gap-2 text-xs text-ink min-w-0"
-                  >
-                    <span className="flex items-center gap-2 min-w-0 truncate">
-                      <i className="size-2 shrink-0 rounded-[2px]" style={{ background: s.color }} />
-                      <span className="truncate">{s.label}</span>
-                    </span>
-                    <span className="tabular-nums text-ink-muted shrink-0 text-right text-[11px] sm:text-xs">
-                      {int(s.value)} ({pct(totalBerstatus ? s.value / totalBerstatus : null)})
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Panel>
+          <DonutPanel
+            title="Tracking Verifikasi Berkas"
+            note={`${int(totalBerstatus)} baris berstatus`}
+            descriptions={KET_PMB}
+            parts={[
+              { label: "Menunggu", value: k.menunggu, color: WARNA.menunggu },
+              { label: "Terverifikasi", value: k.terverifikasi, color: WARNA.terverifikasi },
+              { label: "Ditolak", value: k.ditolak, color: WARNA.ditolak },
+            ]}
+          />
         </div>
 
         {/* Tabel Verifikasi (Frame Paten + Pagination) */}

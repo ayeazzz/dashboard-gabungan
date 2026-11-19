@@ -1,5 +1,7 @@
 import { FilterBar } from "@/components/dashboard/FilterBar";
-import { BarList, Donut, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { BarList, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { DonutPanel } from "@/components/dashboard/DonutPanel";
+import { KET_SMUP } from "@/lib/dashboard/keterangan";
 import {
   KpiCard,
   PageHeader,
@@ -75,6 +77,7 @@ export default async function HalamanSmup({
             <DonutPanel
               title="Status Kelulusan"
               note="Diterima vs tidak diterima"
+              descriptions={KET_SMUP}
               parts={[
                 { label: "Lulus", value: k.diterima, color: SERIES.s1 },
                 { label: "Tidak Lulus", value: tidakLulus, color: SERIES.s3 },
@@ -83,6 +86,7 @@ export default async function HalamanSmup({
             <DonutPanel
               title="Status Registrasi"
               note="Daftar ulang dari yang diterima"
+              descriptions={KET_SMUP}
               parts={[
                 { label: "Registrasi", value: k.registrasi, color: SERIES.s1 },
                 { label: "Belum Registrasi", value: belumRegistrasi, color: SERIES.s3 },
@@ -192,37 +196,5 @@ export default async function HalamanSmup({
         </Section>
       </div>
     </div>
-  );
-}
-
-function DonutPanel({
-  title,
-  note,
-  parts,
-}: {
-  title: string;
-  note?: string;
-  parts: { label: string; value: number; color: string }[];
-}) {
-  const total = parts.reduce((a, p) => a + p.value, 0);
-  return (
-    <Panel title={title} note={note}>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4 min-w-0">
-        <Donut parts={parts} size={96} />
-        <ul className="w-full space-y-1.5 sm:w-auto min-w-0 flex-1">
-          {parts.map((p) => (
-            <li key={p.label} className="flex items-center justify-between gap-2 text-xs text-ink min-w-0">
-              <span className="flex items-center gap-1.5 min-w-0 truncate">
-                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
-                <span className="truncate">{p.label}</span>
-              </span>
-              <span className="tabular-nums text-ink-muted shrink-0 text-right text-[11px] sm:text-xs">
-                {int(p.value)} ({pct(total ? p.value / total : null)})
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Panel>
   );
 }
