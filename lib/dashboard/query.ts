@@ -1,6 +1,7 @@
 // Satu-satunya tempat angka dashboard dihitung. Komponen tidak menghitung apa pun.
 // Semantik mengikuti sheet `Calc` / `Calc_Prodi` di workbook acuan.
 import { pool } from "./db";
+import { VALID_PAIRS_SQL } from "./master";
 import {
   MOCK_FILTER_OPTIONS,
   getMockPmbData,
@@ -79,6 +80,7 @@ base AS (
   CROSS JOIN f
   WHERE true
     ${opts.teks ? "AND p.flag_tahun_teks = 0" : ""}
+    AND (j.nama, jm.nama) IN ${VALID_PAIRS_SQL}
     AND ((f.v->>'jenjang') = '' OR j.nama = f.v->>'jenjang')
     AND ((f.v->>'jalur') = '' OR jm.nama = f.v->>'jalur')
     AND ((f.v->>'fakultas') = '' OR fa.nama_lengkap = f.v->>'fakultas')
@@ -89,11 +91,12 @@ base AS (
 
 // Daya tampung efektif: pakai rincian per jalur bila ada, kalau tidak pakai kuota tahunan.
 // Jalur yang tidak valid untuk jenjang tertentu (misal SNBP untuk Magister) menghasilkan daya tampung 0.
+// Validitas memakai aturan master (lib/dashboard/master.ts), bukan data pendaftaran.
 const dtCte = `
 valid_jalur AS (
-  SELECT DISTINCT p.jenjang_id, p.jalur_id FROM pendaftaran p
-  UNION
-  SELECT ps.jenjang_id, dtj.jalur_id FROM daya_tampung_jalur dtj JOIN program_studi ps ON ps.id = dtj.prodi_id
+  SELECT j.id AS jenjang_id, jm.id AS jalur_id
+  FROM jenjang j
+  JOIN jalur_masuk jm ON (j.nama, jm.nama) IN ${VALID_PAIRS_SQL}
 ),
 dt_eff AS (
   SELECT dt.prodi_id,
@@ -144,9 +147,9 @@ export async function getFilterOptions(): Promise<FilterOptions> {
           SELECT json_object_agg(j_nama, jalurs) FROM (
             SELECT j.nama AS j_nama, json_agg(DISTINCT jm.nama ORDER BY jm.nama) AS jalurs
             FROM (
-              SELECT DISTINCT p.jenjang_id, p.jalur_id FROM pendaftaran p
-              UNION
-              SELECT ps.jenjang_id, dtj.jalur_id FROM daya_tampung_jalur dtj JOIN program_studi ps ON ps.id = dtj.prodi_id
+              SELECT j2.id AS jenjang_id, jm2.id AS jalur_id
+              FROM jenjang j2
+              JOIN jalur_masuk jm2 ON (j2.nama, jm2.nama) IN ${VALID_PAIRS_SQL}
             ) v
             JOIN jenjang j ON j.id = v.jenjang_id
             JOIN jalur_masuk jm ON jm.id = v.jalur_id

@@ -147,7 +147,7 @@ export async function getNilaiData(f: FiltersNilai): Promise<NilaiData> {
         `${cte}
         SELECT
           (SELECT count(*)::int FROM base)                                                AS total_transaksi,
-          (SELECT count(DISTINCT ps2.id) FROM program_studi ps2)                         AS jumlah_prodi,
+          (SELECT count(DISTINCT prodi) FROM base WHERE prodi IS NOT NULL)                AS jumlah_prodi,
           (SELECT count(*)::int FROM base WHERE status_nilai = 'Lengkap')                AS jumlah_lengkap,
           (SELECT count(*)::int FROM base WHERE status_nilai = 'Tidak Lengkap')          AS jumlah_tidak_lengkap,
           (SELECT count(*)::int FROM base WHERE status_nilai = 'Null')                   AS jumlah_null`,
