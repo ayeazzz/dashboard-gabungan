@@ -114,6 +114,12 @@ export default async function HalamanSmup({
           >
             <GroupedBars
               groups={data.fakultas.map((f) => f.label)}
+              notes={data.fakultas.map(
+                (f) =>
+                  `Diterima ${pct(f.pendaftar > 0 ? f.diterima / f.pendaftar : null)} dari pendaftar · Registrasi ${pct(
+                    f.diterima > 0 ? f.registrasi / f.diterima : null,
+                  )} dari diterima`,
+              )}
               series={[
                 { label: "Pendaftar", values: data.fakultas.map((f) => f.pendaftar), color: SERIES.s3 },
                 { label: "Diterima", values: data.fakultas.map((f) => f.diterima), color: SERIES.s1 },

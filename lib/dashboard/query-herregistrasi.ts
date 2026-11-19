@@ -232,7 +232,20 @@ export async function getHerregistrasiData(f: FiltersHerregistrasi): Promise<Her
       statusHerregistrasi: statusHQ.rows,
       jenisHerregistrasi: jenisHQ.rows,
       statusKrs: statusKrsQ.rows,
-      distribusiFakultas: distribusiQ.rows,
+      distribusiFakultas: (
+        distribusiQ.rows as Array<{
+          fakultas: string;
+          jumlah_mahasiswa?: number;
+          jumlahMahasiswa?: number;
+          herregistrasi: number;
+          krs: number;
+        }>
+      ).map((r) => ({
+        fakultas: r.fakultas,
+        jumlahMahasiswa: r.jumlahMahasiswa ?? r.jumlah_mahasiswa ?? 0,
+        herregistrasi: r.herregistrasi,
+        krs: r.krs,
+      })),
       prodiSummary,
       pctHerregistrasiTotal: pctHerregistrasi,
       pctKrsTotal: pctKrs,

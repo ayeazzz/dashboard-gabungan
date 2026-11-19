@@ -153,6 +153,13 @@ export default async function HalamanHerregistrasi({
           >
             <GroupedBars
               groups={fakLabels}
+              titles={distribusiFak.map((r) => r.fakultas)}
+              notes={distribusiFak.map(
+                (r) =>
+                  `Herregistrasi ${pct(r.jumlahMahasiswa > 0 ? r.herregistrasi / r.jumlahMahasiswa : null)} dari mahasiswa · KRS ${pct(
+                    r.herregistrasi > 0 ? r.krs / r.herregistrasi : null,
+                  )} dari herregistrasi`,
+              )}
               series={[
                 { label: "Jumlah Mahasiswa", values: distribusiFak.map((r) => r.jumlahMahasiswa), color: SERIES.s3 },
                 { label: "Herregistrasi",    values: distribusiFak.map((r) => r.herregistrasi),   color: SERIES.s1 },

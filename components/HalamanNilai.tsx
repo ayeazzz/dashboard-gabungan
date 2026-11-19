@@ -106,6 +106,8 @@ export default async function HalamanNilai({
             >
               <GroupedBars
                 groups={data.sebaranFakultas.map((r) => r.fakultas.replace(/^\d+\s*-\s*/, ""))}
+                titles={data.sebaranFakultas.map((r) => r.fakultas)}
+                share
                 series={[
                   {
                     label: "Lengkap",

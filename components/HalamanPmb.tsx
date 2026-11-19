@@ -30,9 +30,9 @@ export default async function HalamanPmb({
     label: r.prodi,
     total: r.total,
     segments: [
-      { value: r.menunggu, color: WARNA.menunggu },
-      { value: r.terverifikasi, color: WARNA.terverifikasi },
-      { value: r.ditolak, color: WARNA.ditolak },
+      { label: "Menunggu", value: r.menunggu, color: WARNA.menunggu },
+      { label: "Terverifikasi", value: r.terverifikasi, color: WARNA.terverifikasi },
+      { label: "Ditolak", value: r.ditolak, color: WARNA.ditolak },
     ],
   }));
 
