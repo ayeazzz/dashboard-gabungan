@@ -124,7 +124,7 @@ export default async function HalamanSmup({
         </Section>
 
         <Section title="Program Studi Terfavorit & Keketatan Tertinggi">
-          <div className="grid gap-3 md:grid-cols-2 min-w-0">
+          <div className="grid gap-3 xl:grid-cols-2 min-w-0">
             <Panel title="Top 10 Pendaftar Terbanyak" note="Akumulasi seluruh tahun pada filter aktif">
               <BarList
                 items={data.topFavorit.map((p) => ({ label: p.prodi, value: p.pendaftar }))}
@@ -172,9 +172,6 @@ export default async function HalamanSmup({
               <p className="text-[11px] sm:text-xs text-ink-muted">
                 Semua metrik dihitung dari database · pendaftar teks dikecualikan
               </p>
-              <p className="text-[10px] sm:text-[11px] text-ink-muted">
-                ↕ Geser atas-bawah · ↔ Geser kiri-kanan di dalam kotak
-              </p>
             </div>
             <TableKeketatanProdi data={data.prodi} />
           </div>
@@ -186,9 +183,6 @@ export default async function HalamanSmup({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
               <p className="text-[11px] sm:text-xs text-ink-muted">
                 Keketatan = diterima / pendaftar · Registrasi = registrasi / diterima (termasuk baris tahun-teks)
-              </p>
-              <p className="text-[10px] sm:text-[11px] text-ink-muted">
-                ↕ Geser atas-bawah · ↔ Geser kiri-kanan di dalam kotak
               </p>
             </div>
             <TableTrenHistoris matrix={data.matrix} tahun={data.tahun} />

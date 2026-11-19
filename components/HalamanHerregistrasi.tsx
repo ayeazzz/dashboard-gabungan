@@ -169,9 +169,6 @@ export default async function HalamanHerregistrasi({
               <p className="text-[11px] sm:text-xs text-ink-muted">
                 Persentase Herregistrasi dan KRS per Program Studi dan Jenjang
               </p>
-              <p className="text-[10px] sm:text-[11px] text-ink-muted">
-                ↕ Geser atas-bawah · ↔ Geser kiri-kanan di dalam kotak
-              </p>
             </div>
 
             <TableHerregistrasiProdi

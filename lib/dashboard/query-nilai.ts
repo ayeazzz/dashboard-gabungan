@@ -68,7 +68,8 @@ WITH base AS (
 let dbConnectedCache: { val: boolean; time: number } | null = null;
 
 async function isDbConnected(): Promise<boolean> {
-  const now = Date.now();
+  // performance.now(): Date.now() tidak boleh dipakai saat prerender (Next cache components).
+  const now = performance.now();
   if (dbConnectedCache && now - dbConnectedCache.time < 10000) {
     return dbConnectedCache.val;
   }

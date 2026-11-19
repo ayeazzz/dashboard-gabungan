@@ -89,7 +89,7 @@ export default async function HalamanNilai({
 
         {/* Sebaran Nilai */}
         <Section title="Sebaran Nilai">
-          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr] min-w-0">
+          <div className="grid gap-3 xl:grid-cols-[1.6fr_1fr] min-w-0">
             {/* Grouped bar: Sebaran Status Nilai per Fakultas */}
             <Panel
               title="Sebaran Status Nilai per Fakultas"
@@ -143,14 +143,11 @@ export default async function HalamanNilai({
 
         {/* Rincian & Kategori */}
         <Section title="Rincian & Kategori">
-          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr] min-w-0">
+          <div className="grid gap-3 xl:grid-cols-[1.6fr_1fr] min-w-0">
             {/* Table Summary per Prodi (Frame Paten + Pagination) */}
             <div className="flex flex-col rounded-panel bg-surface p-3.5 sm:p-5 shadow-card min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
                 <h3 className="text-xs sm:text-sm font-bold text-ink">Table Summary</h3>
-                <span className="text-[10px] sm:text-[11px] text-ink-muted">
-                  ↕ Geser atas-bawah · ↔ Geser kiri-kanan di dalam kotak
-                </span>
               </div>
 
               <TableNilaiProdi

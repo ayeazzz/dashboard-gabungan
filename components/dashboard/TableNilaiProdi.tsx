@@ -93,13 +93,13 @@ export function TableNilaiProdi({
                   className="border-b border-border last:border-0 hover:bg-surface-alt/60 transition-colors"
                 >
                   <td
-                    className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] truncate`}
+                    className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[150px] max-w-[220px] !whitespace-normal leading-snug`}
                     title={r.fakultas}
                   >
                     {r.fakultas}
                   </td>
                   <td
-                    className={`${cellTd} text-left max-w-[180px] sm:max-w-none truncate`}
+                    className={`${cellTd} text-left min-w-[180px] max-w-[280px] !whitespace-normal leading-snug`}
                     title={r.prodi}
                   >
                     {r.prodi}

@@ -116,17 +116,13 @@ export function PanelGrid({ cols = 3, children }: { cols?: 2 | 3; children: Reac
     <div
       className={`grid gap-3 min-w-0 ${
         cols === 3
-          ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
-          : "grid-cols-1 md:grid-cols-2"
+          ? "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+          : "grid-cols-1 lg:grid-cols-2"
       }`}
     >
       {children}
     </div>
   );
-}
-
-export function ScrollHint({ className = "" }: { className?: string }) {
-  return <p className={`text-[10px] text-ink-muted md:hidden ${className}`}>← Geser tabel ke samping →</p>;
 }
 
 export function RowCount({ shown }: { shown: number }) {

@@ -123,9 +123,6 @@ export function GroupedBars({
           ))}
         </div>
       </div>
-      <p className="mt-1.5 text-right text-[10px] sm:text-[11px] text-ink-muted md:hidden">
-        ← Geser grafik untuk melihat {groups.length} fakultas →
-      </p>
     </div>
   );
 }

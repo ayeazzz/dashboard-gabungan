@@ -1,3 +1,4 @@
+import { isJalurValid } from "./master";
 import type { Filters } from "./types";
 
 // Warna seri diambil apa adanya dari mockup Figma.
@@ -43,9 +44,13 @@ const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "
 
 export function parseFilters(sp: Record<string, string | string[] | undefined>): Filters {
   const tahun = Number(one(sp.tahun));
+  const jenjang = one(sp.jenjang);
+  // Jalur yang tidak sah untuk jenjang terpilih (mis. SNBP + Magister) dibuang dari filter.
+  const jalurRaw = one(sp.jalur);
+  const jalur = jenjang && jalurRaw && !isJalurValid(jenjang, jalurRaw) ? "" : jalurRaw;
   return {
-    jenjang: one(sp.jenjang),
-    jalur: one(sp.jalur),
+    jenjang,
+    jalur,
     fakultas: one(sp.fakultas),
     prodi: one(sp.prodi),
     tahun: Number.isInteger(tahun) && tahun > 0 ? tahun : null,

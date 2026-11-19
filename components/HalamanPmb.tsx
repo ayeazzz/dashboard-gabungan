@@ -81,7 +81,7 @@ export default async function HalamanPmb({
           />
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-3 min-w-0">
+        <div className="grid gap-3 xl:grid-cols-3 min-w-0">
           <Panel
             className="lg:col-span-2"
             title="Tren Pendaftaran 30 Hari Terakhir"
@@ -108,9 +108,6 @@ export default async function HalamanPmb({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
               <p className="text-[11px] sm:text-xs text-ink-muted">
                 Tiga kategori memakai awalan status: Terverifikasi*, Menunggu*, Ditolak* (total {int(totalBerstatus)} baris).
-              </p>
-              <p className="text-[10px] sm:text-[11px] text-ink-muted">
-                ↕ Geser atas-bawah · ↔ Geser kiri-kanan di dalam kotak
               </p>
             </div>
 
