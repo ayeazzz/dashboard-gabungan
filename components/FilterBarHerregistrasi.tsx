@@ -9,7 +9,9 @@ const selectCls =
 
 function toQueryHerregistrasi(f: FiltersHerregistrasi): string {
   const q = new URLSearchParams();
+  if (f.jenjang) q.set("jenjang", f.jenjang);
   if (f.fakultas) q.set("fakultas", f.fakultas);
+  if (f.prodi) q.set("prodi", f.prodi);
   if (f.statusHerregistrasi) q.set("statusHerregistrasi", f.statusHerregistrasi);
   if (f.statusKrs) q.set("statusKrs", f.statusKrs);
   const s = q.toString();
@@ -26,8 +28,43 @@ export default function FilterBarHerregistrasi({
   const router = useRouter();
   const pathname = usePathname();
 
+  // Opsi dropdown dinamis berdasarkan pilihan Jenjang dan Fakultas
+  const fakultasOptions = filters.jenjang
+    ? (options.fakultasByJenjang?.[filters.jenjang] ?? options.fakultas)
+    : options.fakultas;
+
+  let prodiOptions = options.prodi ?? [];
+  if (filters.jenjang && options.prodiByJenjang?.[filters.jenjang]) {
+    prodiOptions = options.prodiByJenjang[filters.jenjang];
+  }
+  if (filters.fakultas && options.prodiByFakultas?.[filters.fakultas]) {
+    const fakSet = new Set(options.prodiByFakultas[filters.fakultas]);
+    prodiOptions = prodiOptions.filter((p) => fakSet.has(p));
+  }
+
   const change = (key: keyof FiltersHerregistrasi, value: string) => {
     const next: FiltersHerregistrasi = { ...filters, [key]: value };
+
+    if (key === "jenjang") {
+      if (value) {
+        const validFaks = options.fakultasByJenjang?.[value];
+        if (validFaks && next.fakultas && !validFaks.includes(next.fakultas)) {
+          next.fakultas = "";
+        }
+        const validProdis = options.prodiByJenjang?.[value];
+        if (validProdis && next.prodi && !validProdis.includes(next.prodi)) {
+          next.prodi = "";
+        }
+      }
+    } else if (key === "fakultas") {
+      if (value) {
+        const validProdis = options.prodiByFakultas?.[value];
+        if (validProdis && next.prodi && !validProdis.includes(next.prodi)) {
+          next.prodi = "";
+        }
+      }
+    }
+
     router.replace(pathname + toQueryHerregistrasi(next), { scroll: false });
   };
 
@@ -36,33 +73,67 @@ export default function FilterBarHerregistrasi({
   };
 
   const hasActiveFilters = Boolean(
-    filters.fakultas || filters.statusHerregistrasi || filters.statusKrs,
+    filters.jenjang ||
+      filters.fakultas ||
+      filters.prodi ||
+      filters.statusHerregistrasi ||
+      filters.statusKrs,
   );
 
   const STATUS_HERREGISTRASI = ["Herregistrasi", "Tidak Herregistrasi"];
   const STATUS_KRS = ["KRS", "Tidak KRS"];
 
   return (
-    <div className="rounded-card bg-surface p-3.5 sm:p-4 shadow-card">
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
+    <div className="rounded-card bg-surface p-3.5 sm:p-4 shadow-card min-w-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3">
+        {/* Jenjang */}
+        <label className="block min-w-0">
+          <span className="mb-1 block text-[11px] font-bold text-ink-muted truncate">JENJANG</span>
+          <select
+            value={filters.jenjang}
+            onChange={(e) => change("jenjang", e.target.value)}
+            className={selectCls}
+          >
+            <option value="">{SEMUA}</option>
+            {(options.jenjang ?? []).map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </label>
+
         {/* Fakultas */}
-        <label className="block col-span-2 md:col-span-1">
-          <span className="mb-1 block text-[11px] font-bold text-ink-muted">FAKULTAS</span>
+        <label className="block min-w-0">
+          <span className="mb-1 block text-[11px] font-bold text-ink-muted truncate">FAKULTAS</span>
           <select
             value={filters.fakultas}
             onChange={(e) => change("fakultas", e.target.value)}
             className={selectCls}
           >
             <option value="">{SEMUA}</option>
-            {options.fakultas.map((o) => (
+            {fakultasOptions.map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </label>
+
+        {/* Program Studi */}
+        <label className="block min-w-0">
+          <span className="mb-1 block text-[11px] font-bold text-ink-muted truncate">PROGRAM STUDI</span>
+          <select
+            value={filters.prodi}
+            onChange={(e) => change("prodi", e.target.value)}
+            className={selectCls}
+          >
+            <option value="">{SEMUA}</option>
+            {prodiOptions.map((o) => (
               <option key={o} value={o}>{o}</option>
             ))}
           </select>
         </label>
 
         {/* Status Herregistrasi */}
-        <label className="block">
-          <span className="mb-1 block text-[11px] font-bold text-ink-muted">STATUS HERREGISTRASI</span>
+        <label className="block min-w-0">
+          <span className="mb-1 block text-[11px] font-bold text-ink-muted truncate">STATUS HERREGISTRASI</span>
           <select
             value={filters.statusHerregistrasi}
             onChange={(e) => change("statusHerregistrasi", e.target.value)}
@@ -76,8 +147,8 @@ export default function FilterBarHerregistrasi({
         </label>
 
         {/* Status KRS */}
-        <label className="block">
-          <span className="mb-1 block text-[11px] font-bold text-ink-muted">STATUS KRS</span>
+        <label className="block min-w-0">
+          <span className="mb-1 block text-[11px] font-bold text-ink-muted truncate">STATUS KRS</span>
           <select
             value={filters.statusKrs}
             onChange={(e) => change("statusKrs", e.target.value)}

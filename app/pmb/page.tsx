@@ -5,7 +5,7 @@ import HalamanPmb from "@/components/HalamanPmb";
 import { LoadingShell } from "@/components/dashboard/ui";
 
 export const metadata: Metadata = {
-  title: "Dashboard PMB",
+  title: "PMB",
   description: "Snapshot penerimaan mahasiswa baru beserta status verifikasi berkas.",
 };
 

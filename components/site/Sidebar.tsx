@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: "Snapshot PMB",
+    label: "PMB",
     href: "/pmb",
     description: "Tren Harian & Verifikasi Berkas",
     icon: (active) => (

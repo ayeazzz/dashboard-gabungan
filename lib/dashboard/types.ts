@@ -16,6 +16,10 @@ export type FilterOptions = {
   fakultas: string[];
   prodi: string[];
   tahun: number[];
+  jalurByJenjang?: Record<string, string[]>;
+  fakultasByJenjang?: Record<string, string[]>;
+  prodiByJenjang?: Record<string, string[]>;
+  prodiByFakultas?: Record<string, string[]>;
 };
 
 export type ProdiRow = {

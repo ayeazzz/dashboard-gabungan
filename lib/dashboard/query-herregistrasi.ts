@@ -1,6 +1,10 @@
 // Query functions untuk Dashboard Herregistrasi dan KRS.
 // Semua kalkulasi di SQL — bila database offline, fallback ke data mockup otomatis.
 import { getHerregPool } from "./db";
+import {
+  DEFAULT_OPTIONS_HERREGISTRASI,
+  getMockHerregistrasiData,
+} from "./mock-herregistrasi";
 import type {
   FiltersHerregistrasi,
   FilterOptionsHerregistrasi,
@@ -14,9 +18,17 @@ function buildWhere(f: FiltersHerregistrasi): { where: string; params: string[] 
   const params: string[] = [];
   let idx = 1;
 
+  if (f.jenjang) {
+    conditions.push(`j.nama = $${idx++}`);
+    params.push(f.jenjang);
+  }
   if (f.fakultas) {
     conditions.push(`fa.nama_lengkap = $${idx++}`);
     params.push(f.fakultas);
+  }
+  if (f.prodi) {
+    conditions.push(`ps.label = $${idx++}`);
+    params.push(f.prodi);
   }
   if (f.statusHerregistrasi) {
     conditions.push(`ma.status_herregistrasi = $${idx++}`);
@@ -37,110 +49,71 @@ const JOINS = `
   LEFT JOIN jenjang j ON j.id = ma.jenjang_id
 `;
 
-const DEFAULT_FAKULTAS = [
-  "11 - Hukum",
-  "12 - Ekonomi dan Bisnis",
-  "13 - Kedokteran",
-  "14 - Matematika dan Ilmu Pengetahuan Alam",
-  "15 - Pertanian",
-  "16 - Kedokteran Gigi",
-  "17 - Ilmu Sosial dan Ilmu Politik",
-  "18 - Ilmu Budaya",
-  "19 - Psikologi",
-  "20 - Peternakan",
-  "21 - Ilmu Komunikasi",
-  "22 - Keperawatan",
-  "23 - Perikanan dan Ilmu Kelautan",
-  "24 - Teknologi Industri Pertanian",
-  "25 - Farmasi",
-];
+let dbConnectedCache: { val: boolean; time: number } | null = null;
 
 async function isDbConnected(): Promise<boolean> {
+  const now = Date.now();
+  if (dbConnectedCache && now - dbConnectedCache.time < 10000) {
+    return dbConnectedCache.val;
+  }
   try {
     const client = await getHerregPool().connect();
     client.release();
+    dbConnectedCache = { val: true, time: now };
     return true;
   } catch {
+    dbConnectedCache = { val: false, time: now };
     return false;
   }
 }
 
 export async function getFilterOptionsHerregistrasi(): Promise<FilterOptionsHerregistrasi> {
   if (!(await isDbConnected())) {
-    return { fakultas: DEFAULT_FAKULTAS };
+    return DEFAULT_OPTIONS_HERREGISTRASI;
   }
   try {
     const { rows } = await getHerregPool().query(`
-      SELECT json_agg(nama_lengkap ORDER BY id) AS fakultas
-      FROM fakultas
+      SELECT json_build_object(
+        'jenjang',  (SELECT json_agg(nama ORDER BY id) FROM jenjang),
+        'fakultas', (SELECT json_agg(nama_lengkap ORDER BY id) FROM fakultas),
+        'prodi',    (SELECT json_agg(label ORDER BY label) FROM program_studi),
+        'fakultasByJenjang', (
+          SELECT json_object_agg(j_nama, faks) FROM (
+            SELECT j.nama AS j_nama, json_agg(DISTINCT fa.nama_lengkap ORDER BY fa.nama_lengkap) AS faks
+            FROM program_studi ps
+            JOIN jenjang j ON j.id = ps.jenjang_id
+            JOIN fakultas fa ON fa.id = ps.fakultas_id
+            GROUP BY j.id, j.nama
+          ) jf
+        ),
+        'prodiByJenjang', (
+          SELECT json_object_agg(j_nama, prodis) FROM (
+            SELECT j.nama AS j_nama, json_agg(ps.label ORDER BY ps.label) AS prodis
+            FROM program_studi ps
+            JOIN jenjang j ON j.id = ps.jenjang_id
+            GROUP BY j.id, j.nama
+          ) jp
+        ),
+        'prodiByFakultas', (
+          SELECT json_object_agg(f_nama, prodis) FROM (
+            SELECT fa.nama_lengkap AS f_nama, json_agg(ps.label ORDER BY ps.label) AS prodis
+            FROM program_studi ps
+            JOIN fakultas fa ON fa.id = ps.fakultas_id
+            GROUP BY fa.id, fa.nama_lengkap
+          ) fp
+        )
+      ) AS options
     `);
-    return { fakultas: (rows[0]?.fakultas as string[]) ?? DEFAULT_FAKULTAS };
+    return (rows[0]?.options as FilterOptionsHerregistrasi) ?? DEFAULT_OPTIONS_HERREGISTRASI;
   } catch {
-    return { fakultas: DEFAULT_FAKULTAS };
+    return DEFAULT_OPTIONS_HERREGISTRASI;
   }
 }
 
-// Data Mockup Sesuai Gambar 2 bila DB offline
-const MOCK_HERREGISTRASI: HerregistrasiData = {
-  kpi: {
-    jumlahMahasiswa: 31770,
-    jumlahHerregistrasi: 30130,
-    pctHerregistrasi: 0.9483,
-    jumlahKrs: 28249,
-    pctKrs: 0.9399,
-  },
-  statusHerregistrasi: [
-    { label: "Herregistrasi", jumlah: 30130 },
-    { label: "Tidak Herregistrasi", jumlah: 1640 },
-  ],
-  jenisHerregistrasi: [
-    { label: "Bayar Mandiri", jumlah: 25315 },
-    { label: "Beasiswa", jumlah: 4650 },
-    { label: "Cuti", jumlah: 75 },
-    { label: "Rp. 0 Pembebasan", jumlah: 54 },
-    { label: "Penangguhan", jumlah: 36 },
-  ],
-  statusKrs: [
-    { label: "KRS", jumlah: 28249 },
-    { label: "Tidak KRS", jumlah: 1806 },
-  ],
-  distribusiFakultas: [
-    { fakultas: "11 - Hukum", jumlahMahasiswa: 2150, herregistrasi: 2040, krs: 1920 },
-    { fakultas: "12 - Ekonomi dan Bisnis", jumlahMahasiswa: 3500, herregistrasi: 3340, krs: 3150 },
-    { fakultas: "13 - Kedokteran", jumlahMahasiswa: 3400, herregistrasi: 3230, krs: 3060 },
-    { fakultas: "14 - MIPA", jumlahMahasiswa: 2800, herregistrasi: 2660, krs: 2520 },
-    { fakultas: "15 - Pertanian", jumlahMahasiswa: 2600, herregistrasi: 2470, krs: 2340 },
-    { fakultas: "16 - Kedokteran Gigi", jumlahMahasiswa: 1200, herregistrasi: 1140, krs: 1080 },
-    { fakultas: "17 - FISIP", jumlahMahasiswa: 3300, herregistrasi: 3130, krs: 2970 },
-    { fakultas: "18 - Ilmu Budaya", jumlahMahasiswa: 3100, herregistrasi: 2940, krs: 2790 },
-    { fakultas: "19 - Psikologi", jumlahMahasiswa: 1100, herregistrasi: 1040, krs: 990 },
-    { fakultas: "20 - Peternakan", jumlahMahasiswa: 1700, herregistrasi: 1610, krs: 1530 },
-    { fakultas: "21 - Ilmu Komunikasi", jumlahMahasiswa: 3200, herregistrasi: 3040, krs: 2880 },
-    { fakultas: "22 - Keperawatan", jumlahMahasiswa: 1400, herregistrasi: 1330, krs: 1260 },
-    { fakultas: "23 - FPIK", jumlahMahasiswa: 2000, herregistrasi: 1900, krs: 1800 },
-    { fakultas: "24 - FTIP", jumlahMahasiswa: 1800, herregistrasi: 1710, krs: 1620 },
-    { fakultas: "25 - Farmasi", jumlahMahasiswa: 1520, herregistrasi: 1440, krs: 1390 },
-  ],
-  prodiSummary: [
-    { prodi: "Administrasi Bisnis", jenjang: "Magister", pctHerregistrasi: 0.8913, pctKrs: 0.8696 },
-    { prodi: "Administrasi Bisnis", jenjang: "Sarjana", pctHerregistrasi: 0.9870, pctKrs: 0.9870 },
-    { prodi: "Administrasi Bisnis K. Pangandaran", jenjang: "Sarjana", pctHerregistrasi: 0.9333, pctKrs: 0.9067 },
-    { prodi: "Administrasi Keuangan Publik", jenjang: "Sarjana Terapan", pctHerregistrasi: 0.8505, pctKrs: 0.8505 },
-    { prodi: "Administrasi Pemerintahan", jenjang: "Sarjana Terapan", pctHerregistrasi: 0.9241, pctKrs: 0.9241 },
-    { prodi: "Administrasi Publik", jenjang: "Magister", pctHerregistrasi: 0.6630, pctKrs: 0.6304 },
-    { prodi: "Administrasi Publik", jenjang: "Sarjana", pctHerregistrasi: 0.9511, pctKrs: 0.9511 },
-    { prodi: "Agribisnis", jenjang: "Sarjana", pctHerregistrasi: 0.9619, pctKrs: 0.9619 },
-    { prodi: "Agronomi", jenjang: "Magister", pctHerregistrasi: 0.9500, pctKrs: 0.9500 },
-    { prodi: "Agroteknologi", jenjang: "Sarjana", pctHerregistrasi: 0.9482, pctKrs: 0.9482 },
-    { prodi: "Agroteknopreneur", jenjang: "Sarjana Terapan", pctHerregistrasi: 0.9112, pctKrs: 0.9112 },
-  ],
-  pctHerregistrasiTotal: 0.9483,
-  pctKrsTotal: 0.9399,
-};
 
 export async function getHerregistrasiData(f: FiltersHerregistrasi): Promise<HerregistrasiData> {
   if (!(await isDbConnected())) {
-    return MOCK_HERREGISTRASI;
+    return getMockHerregistrasiData(f);
   }
   try {
     const pool = getHerregPool();
@@ -200,7 +173,7 @@ export async function getHerregistrasiData(f: FiltersHerregistrasi): Promise<Her
       ),
       pool.query(
         `SELECT
-          ps.nama_prodi                                                                   AS prodi,
+          coalesce(ps.label, ps.nama_prodi)                                               AS prodi,
           j.nama                                                                          AS jenjang,
           count(*)::int                                                                   AS total,
           sum(CASE WHEN ma.status_herregistrasi = 'Herregistrasi' THEN 1 ELSE 0 END)::int AS herregistrasi,
@@ -210,8 +183,8 @@ export async function getHerregistrasiData(f: FiltersHerregistrasi): Promise<Her
         ${JOINS}
         ${where}
         AND ps.nama_prodi IS NOT NULL
-        GROUP BY ps.id, ps.nama_prodi, j.nama
-        ORDER BY ps.nama_prodi, j.nama`,
+        GROUP BY ps.id, coalesce(ps.label, ps.nama_prodi), j.nama
+        ORDER BY prodi, j.nama`,
         params,
       ),
     ]);
@@ -255,27 +228,15 @@ export async function getHerregistrasiData(f: FiltersHerregistrasi): Promise<Her
         jumlahKrs,
         pctKrs,
       },
-      statusHerregistrasi: statusHQ.rows as { label: string; jumlah: number }[],
-      jenisHerregistrasi: jenisHQ.rows as { label: string; jumlah: number }[],
-      statusKrs: statusKrsQ.rows as { label: string; jumlah: number }[],
-      distribusiFakultas: (
-        distribusiQ.rows as {
-          fakultas: string;
-          jumlah_mahasiswa: number;
-          herregistrasi: number;
-          krs: number;
-        }[]
-      ).map((r) => ({
-        fakultas: r.fakultas,
-        jumlahMahasiswa: r.jumlah_mahasiswa,
-        herregistrasi: r.herregistrasi,
-        krs: r.krs,
-      })),
+      statusHerregistrasi: statusHQ.rows,
+      jenisHerregistrasi: jenisHQ.rows,
+      statusKrs: statusKrsQ.rows,
+      distribusiFakultas: distribusiQ.rows,
       prodiSummary,
       pctHerregistrasiTotal: pctHerregistrasi,
       pctKrsTotal: pctKrs,
     };
   } catch {
-    return MOCK_HERREGISTRASI;
+    return getMockHerregistrasiData(f);
   }
 }

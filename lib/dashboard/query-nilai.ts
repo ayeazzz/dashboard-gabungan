@@ -1,25 +1,28 @@
 // Query functions untuk Dashboard Nilai Mahasiswa (Kelengkapan Data Nilai).
-// Semua kalkulasi di SQL — bila database offline, fallback ke data mockup otomatis.
+// Semua kalkulasi di SQL — bila database offline, fallback ke data mockup dinamis otomatis.
 import { getNilaiPool } from "./db";
+import {
+  DEFAULT_OPTIONS_NILAI,
+  getMockNilaiData,
+} from "./mock-nilai";
 import type {
   FilterOptionsNilai,
   FiltersNilai,
-  JenisNilaiRow,
-  KategoriNilaiRow,
   NilaiData,
-  NilaiKpi,
-  ProdiSummaryNilaiRow,
-  SebaranFakultasRow,
 } from "./types-nilai";
 
-function nvl(v: string): string {
-  return v.trim();
+function nvl(v: string | undefined): string {
+  return (v ?? "").trim();
 }
 
 function whereClause(f: FiltersNilai): { sql: string; params: (string | null)[] } {
   const conditions: string[] = [];
   const params: (string | null)[] = [];
 
+  if (nvl(f.jenjang)) {
+    params.push(f.jenjang);
+    conditions.push(`j.nama = $${params.length}`);
+  }
   if (nvl(f.fakultas)) {
     params.push(f.fakultas);
     conditions.push(`fa.nama_lengkap = $${params.length}`);
@@ -52,33 +55,30 @@ WITH base AS (
     nm.jenis_nilai,
     nm.kategori_nilai,
     fa.nama_lengkap AS fakultas,
-    ps.label        AS prodi
+    ps.label        AS prodi,
+    j.nama          AS jenjang
   FROM nilai_mahasiswa nm
   LEFT JOIN fakultas fa ON fa.id = nm.fakultas_id
   LEFT JOIN program_studi ps ON ps.id = nm.prodi_id
+  LEFT JOIN jenjang j ON j.id = nm.jenjang_id
   ${where}
 )`;
 }
 
-const DEFAULT_OPTIONS_NILAI: FilterOptionsNilai = {
-  fakultas: [
-    "Ekonomi dan Bisnis", "Farmasi", "Hukum", "Ilmu Budaya",
-    "Ilmu Komunikasi", "Ilmu Sosial dan Ilmu Politik", "Kedokteran",
-    "Kedokteran Gigi", "Keperawatan", "Matematika dan Ilmu Pengetahuan Alam",
-  ],
-  prodi: [
-    "Akuntan", "Akuntansi", "Akuntansi Perpajakan", "Akuntansi Sektor Publik",
-    "Bisnis Digital", "Bisnis Internasional", "Ekonomi", "Ekonomi Islam",
-    "Ekonomi Syariah", "Ilmu Ekonomi",
-  ],
-};
+let dbConnectedCache: { val: boolean; time: number } | null = null;
 
 async function isDbConnected(): Promise<boolean> {
+  const now = Date.now();
+  if (dbConnectedCache && now - dbConnectedCache.time < 10000) {
+    return dbConnectedCache.val;
+  }
   try {
     const client = await getNilaiPool().connect();
     client.release();
+    dbConnectedCache = { val: true, time: now };
     return true;
   } catch {
+    dbConnectedCache = { val: false, time: now };
     return false;
   }
 }
@@ -90,8 +90,34 @@ export async function getFilterOptionsNilai(): Promise<FilterOptionsNilai> {
   try {
     const { rows } = await getNilaiPool().query(`
       SELECT json_build_object(
+        'jenjang',  (SELECT json_agg(nama ORDER BY id) FROM jenjang),
         'fakultas', (SELECT json_agg(nama_lengkap ORDER BY id) FROM fakultas),
-        'prodi',    (SELECT json_agg(label ORDER BY label) FROM program_studi)
+        'prodi',    (SELECT json_agg(label ORDER BY label) FROM program_studi),
+        'fakultasByJenjang', (
+          SELECT json_object_agg(j_nama, faks) FROM (
+            SELECT j.nama AS j_nama, json_agg(DISTINCT fa.nama_lengkap ORDER BY fa.nama_lengkap) AS faks
+            FROM program_studi ps
+            JOIN jenjang j ON j.id = ps.jenjang_id
+            JOIN fakultas fa ON fa.id = ps.fakultas_id
+            GROUP BY j.id, j.nama
+          ) jf
+        ),
+        'prodiByJenjang', (
+          SELECT json_object_agg(j_nama, prodis) FROM (
+            SELECT j.nama AS j_nama, json_agg(ps.label ORDER BY ps.label) AS prodis
+            FROM program_studi ps
+            JOIN jenjang j ON j.id = ps.jenjang_id
+            GROUP BY j.id, j.nama
+          ) jp
+        ),
+        'prodiByFakultas', (
+          SELECT json_object_agg(f_nama, prodis) FROM (
+            SELECT fa.nama_lengkap AS f_nama, json_agg(ps.label ORDER BY ps.label) AS prodis
+            FROM program_studi ps
+            JOIN fakultas fa ON fa.id = ps.fakultas_id
+            GROUP BY fa.id, fa.nama_lengkap
+          ) fp
+        )
       ) AS options
     `);
     return (rows[0]?.options as FilterOptionsNilai) ?? DEFAULT_OPTIONS_NILAI;
@@ -100,65 +126,10 @@ export async function getFilterOptionsNilai(): Promise<FilterOptionsNilai> {
   }
 }
 
-// Data Mockup Sesuai Gambar 1 bila DB offline
-const MOCK_NILAI: NilaiData = {
-  kpi: {
-    totalTransaksi: 194859,
-    jumlahProdi: 143,
-    jumlahLengkap: 192396,
-    pctLengkap: 0.9874,
-    jumlahTidakLengkap: 2052,
-    pctTidakLengkap: 0.0105,
-    jumlahNull: 411,
-    pctNull: 0.0021,
-  },
-  sebaranFakultas: [
-    { fakultas: "Ekonomi dan Bisnis", lengkap: 18500, tidakLengkap: 220, nilaiNull: 45 },
-    { fakultas: "Farmasi", lengkap: 8900, tidakLengkap: 85, nilaiNull: 18 },
-    { fakultas: "Hukum", lengkap: 12100, tidakLengkap: 110, nilaiNull: 22 },
-    { fakultas: "Ilmu Budaya", lengkap: 17800, tidakLengkap: 190, nilaiNull: 38 },
-    { fakultas: "Ilmu Komunikasi", lengkap: 16500, tidakLengkap: 175, nilaiNull: 35 },
-    { fakultas: "FISIP", lengkap: 17200, tidakLengkap: 180, nilaiNull: 37 },
-    { fakultas: "Kedokteran", lengkap: 18900, tidakLengkap: 195, nilaiNull: 40 },
-    { fakultas: "Kedokteran Gigi", lengkap: 5900, tidakLengkap: 60, nilaiNull: 12 },
-    { fakultas: "Keperawatan", lengkap: 6100, tidakLengkap: 65, nilaiNull: 14 },
-    { fakultas: "MIPA", lengkap: 18200, tidakLengkap: 190, nilaiNull: 39 },
-  ],
-  jenisNilai: [
-    { jenis: "A", jumlah: 93948 },
-    { jenis: "B", jumlah: 41200 },
-    { jenis: "A-", jumlah: 37840 },
-    { jenis: "B+", jumlah: 10160 },
-    { jenis: "C", jumlah: 3800 },
-    { jenis: "B-", jumlah: 4300 },
-    { jenis: "Null", jumlah: 411 },
-    { jenis: "C+", jumlah: 1600 },
-    { jenis: "E", jumlah: 900 },
-    { jenis: "K", jumlah: 700 },
-  ],
-  prodiSummary: [
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Akuntan", jumlahLengkap: 124, jumlahTidakLengkap: 0, jumlahNull: 0 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Akuntansi", jumlahLengkap: 3673, jumlahTidakLengkap: 27, jumlahNull: 3 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Akuntansi Perpajakan", jumlahLengkap: 1118, jumlahTidakLengkap: 1, jumlahNull: 0 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Akuntansi Sektor Publik", jumlahLengkap: 1045, jumlahTidakLengkap: 0, jumlahNull: 0 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Bisnis Digital", jumlahLengkap: 1673, jumlahTidakLengkap: 24, jumlahNull: 0 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Bisnis Internasional", jumlahLengkap: 682, jumlahTidakLengkap: 0, jumlahNull: 0 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Ekonomi", jumlahLengkap: 71, jumlahTidakLengkap: 0, jumlahNull: 1 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Ekonomi Islam", jumlahLengkap: 2615, jumlahTidakLengkap: 3, jumlahNull: 0 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Ekonomi Syariah", jumlahLengkap: 388, jumlahTidakLengkap: 72, jumlahNull: 0 },
-    { fakultas: "Ekonomi dan Bisnis", prodi: "Ilmu Ekonomi", jumlahLengkap: 2582, jumlahTidakLengkap: 1, jumlahNull: 13 },
-  ],
-  kategoriNilai: [
-    // Proporsi mengikuti db/seed_nilai.sql (85% / 12% / 3%); total = totalTransaksi (194.859).
-    { label: "Reguler", jumlah: 165630 },
-    { label: "Perbaikan", jumlah: 23383 },
-    { label: "Alih Kredit", jumlah: 5846 },
-  ],
-};
 
 export async function getNilaiData(f: FiltersNilai): Promise<NilaiData> {
   if (!(await isDbConnected())) {
-    return MOCK_NILAI;
+    return getMockNilaiData(f);
   }
   try {
     const pool = getNilaiPool();
@@ -242,46 +213,36 @@ export async function getNilaiData(f: FiltersNilai): Promise<NilaiData> {
     ]);
 
     const k = kpiQ.rows[0];
-    const total = k?.total_transaksi || 1;
+    const total = k.total_transaksi;
 
-    const kpi: NilaiKpi = {
-      totalTransaksi: k?.total_transaksi ?? 0,
-      jumlahProdi: k?.jumlah_prodi ?? 0,
-      jumlahLengkap: k?.jumlah_lengkap ?? 0,
-      pctLengkap: total > 0 ? (k?.jumlah_lengkap ?? 0) / total : null,
-      jumlahTidakLengkap: k?.jumlah_tidak_lengkap ?? 0,
-      pctTidakLengkap: total > 0 ? (k?.jumlah_tidak_lengkap ?? 0) / total : null,
-      jumlahNull: k?.jumlah_null ?? 0,
-      pctNull: total > 0 ? (k?.jumlah_null ?? 0) / total : null,
+    return {
+      kpi: {
+        totalTransaksi: total,
+        jumlahProdi: k.jumlah_prodi,
+        jumlahLengkap: k.jumlah_lengkap,
+        pctLengkap: total > 0 ? k.jumlah_lengkap / total : null,
+        jumlahTidakLengkap: k.jumlah_tidak_lengkap,
+        pctTidakLengkap: total > 0 ? k.jumlah_tidak_lengkap / total : null,
+        jumlahNull: k.jumlah_null,
+        pctNull: total > 0 ? k.jumlah_null / total : null,
+      },
+      sebaranFakultas: sebaranQ.rows.map((r) => ({
+        fakultas: r.fakultas,
+        lengkap: r.lengkap,
+        tidakLengkap: r.tidak_lengkap,
+        nilaiNull: r.null_val,
+      })),
+      jenisNilai: jenisQ.rows,
+      prodiSummary: prodiQ.rows.map((r) => ({
+        fakultas: r.fakultas,
+        prodi: r.prodi,
+        jumlahLengkap: r.jumlah_lengkap,
+        jumlahTidakLengkap: r.jumlah_tidak_lengkap,
+        jumlahNull: r.jumlah_null,
+      })),
+      kategoriNilai: kategoriQ.rows,
     };
-
-    const sebaranFakultas: SebaranFakultasRow[] = sebaranQ.rows.map((r) => ({
-      fakultas: r.fakultas,
-      lengkap: r.lengkap,
-      tidakLengkap: r.tidak_lengkap,
-      nilaiNull: r.null_val,
-    }));
-
-    const jenisNilai: JenisNilaiRow[] = jenisQ.rows.map((r) => ({
-      jenis: r.jenis,
-      jumlah: r.jumlah,
-    }));
-
-    const prodiSummary: ProdiSummaryNilaiRow[] = prodiQ.rows.map((r) => ({
-      fakultas: r.fakultas,
-      prodi: r.prodi,
-      jumlahLengkap: r.jumlah_lengkap,
-      jumlahTidakLengkap: r.jumlah_tidak_lengkap,
-      jumlahNull: r.jumlah_null,
-    }));
-
-    const kategoriNilai: KategoriNilaiRow[] = kategoriQ.rows.map((r) => ({
-      label: r.label,
-      jumlah: r.jumlah,
-    }));
-
-    return { kpi, sebaranFakultas, jenisNilai, prodiSummary, kategoriNilai };
   } catch {
-    return MOCK_NILAI;
+    return getMockNilaiData(f);
   }
 }

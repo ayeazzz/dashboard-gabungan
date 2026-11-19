@@ -5,11 +5,9 @@ import {
   KpiCard,
   PageHeader,
   Panel,
-  ScrollHint,
   Section,
-  cellTd,
-  cellTh,
 } from "@/components/dashboard/ui";
+import { TableNilaiProdi } from "@/components/dashboard/TableNilaiProdi";
 import { DONUT_COLORS, SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
 import { getFilterOptionsNilai, getNilaiData } from "@/lib/dashboard/query-nilai";
 import type { FiltersNilai } from "@/lib/dashboard/types-nilai";
@@ -27,6 +25,7 @@ const KATEGORI_COLORS: Record<string, string> = {
 function parseFiltersNilai(sp: Record<string, string | string[] | undefined>): FiltersNilai {
   const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
   return {
+    jenjang: one(sp.jenjang),
     fakultas: one(sp.fakultas),
     prodi: one(sp.prodi),
     kategoriNilai: one(sp.kategoriNilai),
@@ -55,7 +54,7 @@ export default async function HalamanNilai({
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-3 sm:p-6 lg:p-8">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6 min-w-0">
         <PageHeader
           title="Nilai Mahasiswa"
           note="Kelengkapan Data Nilai · snapshot database"
@@ -63,8 +62,8 @@ export default async function HalamanNilai({
 
         <FilterBarNilai filters={filters} options={options} />
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-5">
+        {/* KPI Cards: Responsif tanpa bertumpuk */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3">
           <KpiCard
             label="Transaksi Mata Kuliah"
             value={int(k.totalTransaksi)}
@@ -86,7 +85,7 @@ export default async function HalamanNilai({
             note={`${int(k.jumlahTidakLengkap)} transaksi`}
           />
           <KpiCard
-            className="col-span-2 sm:col-span-1"
+            className="sm:col-span-2 md:col-span-1"
             label="Persentase Nilai Null"
             value={pct(k.pctNull, 2)}
             note={`${int(k.jumlahNull)} transaksi`}
@@ -95,7 +94,7 @@ export default async function HalamanNilai({
 
         {/* Sebaran Nilai */}
         <Section title="Sebaran Nilai">
-          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr] min-w-0">
             {/* Grouped bar: Sebaran Status Nilai per Fakultas */}
             <Panel
               title="Sebaran Status Nilai per Fakultas"
@@ -111,7 +110,7 @@ export default async function HalamanNilai({
               }
             >
               <GroupedBars
-                groups={data.sebaranFakultas.map((r) => r.fakultas)}
+                groups={data.sebaranFakultas.map((r) => r.fakultas.replace(/^\d+\s*-\s*/, ""))}
                 series={[
                   {
                     label: "Lengkap",
@@ -148,68 +147,23 @@ export default async function HalamanNilai({
 
         {/* Rincian & Kategori */}
         <Section title="Rincian & Kategori">
-          <div className="grid gap-3 lg:grid-cols-[1.9fr_1fr]">
-            {/* Table Summary per Prodi */}
-            <Panel title="Table Summary" note="Kelengkapan nilai per fakultas dan program studi">
-              <ScrollHint className="mb-2" />
-              <div className="max-h-[440px] overflow-auto rounded-lg border border-border">
-                <table className="w-full border-collapse">
-                  <thead className="sticky top-0 z-30 bg-surface-alt">
-                    <tr className="bg-surface-alt">
-                      <th
-                        className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px]`}
-                      >
-                        Fakultas ▲
-                      </th>
-                      <th className={`${cellTh} text-left min-w-[160px]`}>Program Studi</th>
-                      <th className={`${cellTh} min-w-[88px] text-right !whitespace-normal leading-tight`}>Jumlah Nilai Lengkap</th>
-                      <th className={`${cellTh} min-w-[88px] text-right !whitespace-normal leading-tight`}>Jumlah Nilai Tidak Lengkap</th>
-                      <th className={`${cellTh} min-w-[72px] text-right !whitespace-normal leading-tight`}>Nilai Null</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.prodiSummary.map((r, i) => (
-                      <tr
-                        key={`${r.fakultas}-${r.prodi}-${i}`}
-                        className="border-b border-border last:border-0 hover:bg-surface-alt/50"
-                      >
-                        <td
-                          className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px] max-w-[200px] !whitespace-normal leading-snug`}
-                          title={r.fakultas}
-                        >
-                          {r.fakultas}
-                        </td>
-                        <td className={`${cellTd} text-left min-w-[160px] max-w-[260px] !whitespace-normal leading-snug`} title={r.prodi}>
-                          {r.prodi}
-                        </td>
-                        <td className={`${cellTd} text-right`}>{int(r.jumlahLengkap)}</td>
-                        <td className={`${cellTd} text-right`}>
-                          {r.jumlahTidakLengkap > 0 ? int(r.jumlahTidakLengkap) : "-"}
-                        </td>
-                        <td className={`${cellTd} text-right`}>
-                          {r.jumlahNull > 0 ? int(r.jumlahNull) : "-"}
-                        </td>
-                      </tr>
-                    ))}
-                    {/* Baris total */}
-                    <tr className="sticky bottom-0 z-20 border-t-2 border-border bg-surface-alt font-bold">
-                      <td
-                        className={`${cellTh} text-left sticky left-0 z-10 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
-                      >
-                        Total
-                      </td>
-                      <td className={cellTh}></td>
-                      <td className={`${cellTh} text-right`}>{int(k.jumlahLengkap)}</td>
-                      <td className={`${cellTh} text-right`}>{int(k.jumlahTidakLengkap)}</td>
-                      <td className={`${cellTh} text-right`}>{int(k.jumlahNull)}</td>
-                    </tr>
-                  </tbody>
-                </table>
+          <div className="grid gap-3 lg:grid-cols-[1.6fr_1fr] min-w-0">
+            {/* Table Summary per Prodi (Frame Paten + Pagination) */}
+            <div className="flex flex-col rounded-panel bg-surface p-3.5 sm:p-5 shadow-card min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+                <h3 className="text-xs sm:text-sm font-bold text-ink">Table Summary</h3>
+                <span className="text-[10px] sm:text-[11px] text-ink-muted">
+                  ↕ Geser atas-bawah · ↔ Geser kiri-kanan di dalam kotak
+                </span>
               </div>
-              <p className="mt-2 text-center text-xs text-ink-muted">
-                Menampilkan {data.prodiSummary.length} program studi
-              </p>
-            </Panel>
+
+              <TableNilaiProdi
+                data={data.prodiSummary}
+                totalLengkap={k.jumlahLengkap}
+                totalTidakLengkap={k.jumlahTidakLengkap}
+                totalNull={k.jumlahNull}
+              />
+            </div>
 
             {/* Donut: Kategori Nilai */}
             <DonutPanel

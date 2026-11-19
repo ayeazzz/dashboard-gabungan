@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard SMUP & PMB",
-  description: "Dashboard Keketatan SMUP dan Snapshot PMB Universitas Padjadjaran",
+  title: "Portal Analitik Akademik - Unpad",
+  description: "Dashboard Keketatan SMUP dan PMB Universitas Padjadjaran",
   icons: {
     icon: "/Unpad_logo-secondary_only-P.png",
     shortcut: "/Unpad_logo-secondary_only-P.png",

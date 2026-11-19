@@ -18,6 +18,12 @@ export function getPool(name: string, rawUrl: string): Pool {
     connectionTimeoutMillis: 1500,
   });
 
+  instance.on("error", () => {
+    if (process.env.NODE_ENV !== "production") {
+      // Silent in dev when offline
+    }
+  });
+
   if (process.env.NODE_ENV !== "production") pools[name] = instance;
   return instance;
 }
@@ -31,17 +37,13 @@ export const pool = getPool(
 /** Mengambil pool untuk database Herregistrasi & KRS. */
 export function getHerregPool(): Pool {
   const url = process.env.DATABASE_URL_HERREG;
-  if (!url) {
-    throw new Error("Environment variable DATABASE_URL_HERREG belum diatur.");
-  }
+  if (!url) return pool;
   return getPool("herreg", url);
 }
 
 /** Mengambil pool untuk database Nilai Mahasiswa. */
 export function getNilaiPool(): Pool {
   const url = process.env.DATABASE_URL_NILAI;
-  if (!url) {
-    throw new Error("Environment variable DATABASE_URL_NILAI belum diatur.");
-  }
+  if (!url) return pool;
   return getPool("nilai", url);
 }

@@ -1,6 +1,7 @@
-import { BarList, DonutPanel, GroupedBars, Legend } from "@/components/dashboard/charts";
-import { KpiCard, PageHeader, Panel, PanelGrid, RowCount, Section, cellTd, cellTh, ScrollHint } from "@/components/dashboard/ui";
-import { DONUT_COLORS, SEMUA, SERIES, int, pct } from "@/lib/dashboard/format";
+import { BarList, Donut, GroupedBars, Legend } from "@/components/dashboard/charts";
+import { KpiCard, PageHeader, Panel, PanelGrid, Section } from "@/components/dashboard/ui";
+import { TableHerregistrasiProdi } from "@/components/dashboard/TableHerregistrasiProdi";
+import { SERIES, int, pct } from "@/lib/dashboard/format";
 import { getFilterOptionsHerregistrasi, getHerregistrasiData } from "@/lib/dashboard/query-herregistrasi";
 import type { FiltersHerregistrasi } from "@/lib/dashboard/types-herregistrasi";
 import FilterBarHerregistrasi from "./FilterBarHerregistrasi";
@@ -12,12 +13,23 @@ function parseFiltersHerregistrasi(
 ): FiltersHerregistrasi {
   const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
   return {
+    jenjang: one(sp.jenjang),
     fakultas: one(sp.fakultas),
+    prodi: one(sp.prodi),
     statusHerregistrasi: one(sp.statusHerregistrasi),
     statusKrs: one(sp.statusKrs),
   };
 }
 
+// ─── Warna per jenis herregistrasi ───────────────────────────────────────────
+
+const JENIS_COLOR: Record<string, string> = {
+  "Bayar Mandiri":    SERIES.s1,
+  "Beasiswa":         SERIES.s3,
+  "Cuti":             SERIES.s4,
+  "Rp. 0 Pembebasan": "#9CA3AF",
+  "Penangguhan":      "#6B7280",
+};
 
 // ─── Page Component ───────────────────────────────────────────────────────────
 
@@ -42,10 +54,10 @@ export default async function HalamanHerregistrasi({
   }));
 
   // Jenis Herregistrasi untuk donut
-  const jenisHParts = data.jenisHerregistrasi.map((r, i) => ({
+  const jenisHParts = data.jenisHerregistrasi.map((r) => ({
     label: r.label,
     value: r.jumlah,
-    color: DONUT_COLORS[i % DONUT_COLORS.length],
+    color: JENIS_COLOR[r.label] ?? SERIES.s2,
   }));
 
   // Status KRS untuk BarList
@@ -58,70 +70,73 @@ export default async function HalamanHerregistrasi({
   // Distribusi per Fakultas – abbreviated label untuk chart
   const distribusiFak = data.distribusiFakultas;
   const fakLabels = distribusiFak.map((r) =>
-    // Potong prefix nomor fakultas, mis. "13 - Kedokteran" → "Kedokteran"
     r.fakultas.replace(/^\d+\s*-\s*/, ""),
   );
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-surface-alt p-3 sm:p-6 lg:p-8">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6 min-w-0">
         <PageHeader
           title="Herregistrasi dan KRS"
-          note="Snapshot data mahasiswa aktif · semester berjalan"
+          note="Data herregistrasi dan KRS semester aktif"
         />
 
-        {/* Filter */}
         <FilterBarHerregistrasi filters={filters} options={options} />
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3">
+        {/* KPI Cards: Responsif tanpa bertumpuk */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3">
           <KpiCard
             label="Jumlah Mahasiswa"
             value={int(kpi.jumlahMahasiswa)}
-            note="Mahasiswa terdaftar aktif (selain mahasiswa baru)"
+            note="Mahasiswa herregistrasi (selain mahasiswa baru)"
           />
           <KpiCard
             label="Persentase Herregistrasi"
             value={pct(kpi.pctHerregistrasi)}
-            note={`${int(kpi.jumlahHerregistrasi)} dari ${int(kpi.jumlahMahasiswa)} mahasiswa`}
+            note={`${int(kpi.jumlahHerregistrasi)} dari ${int(kpi.jumlahMahasiswa)} mahasiswa memiliki status herregistrasi`}
           />
           <KpiCard
-            className="col-span-2 sm:col-span-1"
+            className="sm:col-span-2 md:col-span-1"
             label="Persentase KRS"
             value={pct(kpi.pctKrs)}
             note="Dihitung dari mahasiswa herregistrasi selain status Cuti"
           />
         </div>
 
-        {/* Ringkasan & Status */}
+        {/* Ringkasan & Status: 3 kolom (2 donut + 1 bar vertical) */}
         <Section title="Ringkasan & Status">
           <PanelGrid cols={3}>
-            {/* Status Herregistrasi – donut */}
+            {/* Donut: Status Herregistrasi */}
             <DonutPanel
               title="Status Herregistrasi"
-              note="Herregistrasi vs Tidak Herregistrasi"
+              note="Herregistrasi vs tidak herregistrasi"
               parts={statusHParts}
             />
 
-            {/* Jenis Herregistrasi – donut */}
+            {/* Donut: Jenis Herregistrasi */}
             <DonutPanel
               title="Jenis Herregistrasi"
-              note="Rincian jenis pembayaran mahasiswa herregistrasi"
+              note="Bayar Mandiri, Beasiswa, Cuti, Rp. 0 Pembebasan, Penangguhan"
               parts={jenisHParts}
             />
 
-            {/* Status KRS – bar */}
-            <Panel title="Status KRS" note="KRS vs Tidak KRS · dari herregistrasi selain Cuti">
-              <BarList items={krsItems} showValue labelWidth="6rem" />
+            {/* Status KRS */}
+            <Panel
+              title="Status KRS"
+              note="KRS vs tidak KRS"
+            >
+              <div className="mt-2">
+                <BarList items={krsItems} />
+              </div>
             </Panel>
           </PanelGrid>
         </Section>
 
-        {/* Distribusi per Fakultas */}
+        {/* Distribusi per Fakultas: GroupedBars */}
         <Section title="Distribusi per Fakultas">
           <Panel
-            title="Jumlah Mahasiswa, Herregistrasi, dan KRS per Fakultas"
-            note={`${distribusiFak.length} fakultas berdata · urut jumlah mahasiswa terbanyak`}
+            title="Jumlah Mahasiswa, Herregistrasi dan KRS berdasarkan Fakultas"
+            note="Perbandingan antarfakultas; mengikuti filter Fakultas"
             aside={
               <Legend
                 items={[
@@ -143,58 +158,63 @@ export default async function HalamanHerregistrasi({
           </Panel>
         </Section>
 
-        {/* Table Summary */}
+        {/* Table Summary (Frame Paten + Pagination) */}
         <Section title="Table Summary">
           <div className="rounded-panel bg-surface p-3.5 sm:p-5 shadow-card">
-            <ScrollHint className="mb-2 text-right" />
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-surface-alt">
-                    <th className={`${cellTh} text-left sticky left-0 z-20 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[140px]`}>
-                      Program Studi ↑
-                    </th>
-                    <th className={`${cellTh} text-left`}>Jenjang</th>
-                    <th className={`${cellTh} text-right`}>% Herregistrasi</th>
-                    <th className={`${cellTh} text-right`}>% KRS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.prodiSummary.map((r) => (
-                    <tr key={`${r.prodi}-${r.jenjang}`} className="border-b border-border last:border-0 hover:bg-surface-alt/50">
-                      <td className={`${cellTd} text-left sticky left-0 z-10 bg-surface shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] max-w-[150px] sm:max-w-none truncate`}>
-                        {r.prodi}
-                      </td>
-                      <td className={`${cellTd} text-left`}>{r.jenjang}</td>
-                      <td className={`${cellTd} text-right`}>{pct(r.pctHerregistrasi, 2)}</td>
-                      <td className={`${cellTd} text-right`}>{pct(r.pctKrs, 2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                {/* Baris total */}
-                <tfoot>
-                  <tr className="border-t-2 border-border bg-surface-alt font-bold">
-                    <td className={`${cellTd} text-left sticky left-0 z-10 bg-surface-alt shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] font-bold`}>
-                      Total
-                    </td>
-                    <td className={`${cellTd} text-left`} />
-                    <td className={`${cellTd} text-right font-bold`}>{pct(data.pctHerregistrasiTotal, 2)}</td>
-                    <td className={`${cellTd} text-right font-bold`}>{pct(data.pctKrsTotal, 2)}</td>
-                  </tr>
-                </tfoot>
-              </table>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-2">
+              <p className="text-[11px] sm:text-xs text-ink-muted">
+                Persentase Herregistrasi dan KRS per Program Studi dan Jenjang
+              </p>
+              <p className="text-[10px] sm:text-[11px] text-ink-muted">
+                ↕ Geser atas-bawah · ↔ Geser kiri-kanan di dalam kotak
+              </p>
             </div>
-            <RowCount shown={data.prodiSummary.length} />
+
+            <TableHerregistrasiProdi
+              data={data.prodiSummary}
+              totalPctHerregistrasi={data.pctHerregistrasiTotal}
+              totalPctKrs={data.pctKrsTotal}
+            />
           </div>
         </Section>
-
-        {/* Filter aktif */}
-        <p className="text-[11px] sm:text-xs text-ink-muted">
-          Filter aktif: fakultas {filters.fakultas || SEMUA}, status herregistrasi{" "}
-          {filters.statusHerregistrasi || SEMUA}, status KRS {filters.statusKrs || SEMUA}.
-        </p>
       </div>
     </div>
   );
 }
 
+// ─── Donut Panel helper ──────────────────────────────────────────────────────
+
+function DonutPanel({
+  title,
+  note,
+  parts,
+}: {
+  title: string;
+  note?: string;
+  parts: { label: string; value: number; color: string }[];
+}) {
+  const total = parts.reduce((a, p) => a + p.value, 0);
+  return (
+    <Panel title={title} note={note}>
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4 min-w-0">
+        <Donut parts={parts} size={96} />
+        <ul className="w-full space-y-1.5 sm:w-auto min-w-0 flex-1">
+          {parts.map((p) => (
+            <li
+              key={p.label}
+              className="flex items-center justify-between gap-2 text-xs text-ink min-w-0"
+            >
+              <span className="flex items-center gap-1.5 min-w-0 truncate">
+                <i className="size-2 shrink-0 rounded-[2px]" style={{ background: p.color }} />
+                <span className="truncate">{p.label}</span>
+              </span>
+              <span className="tabular-nums text-ink-muted shrink-0 text-right text-[11px] sm:text-xs">
+                {int(p.value)} ({pct(total ? p.value / total : null)})
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Panel>
+  );
+}

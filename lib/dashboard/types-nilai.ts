@@ -1,6 +1,7 @@
 // Types untuk Dashboard Nilai Mahasiswa (Kelengkapan Data Nilai)
 
 export type FiltersNilai = {
+  jenjang: string;
   fakultas: string;
   prodi: string;
   kategoriNilai: string; // '' | 'Reguler' | 'Perbaikan' | 'Alih Kredit'
@@ -8,8 +9,12 @@ export type FiltersNilai = {
 };
 
 export type FilterOptionsNilai = {
+  jenjang: string[];
   fakultas: string[];
   prodi: string[];
+  fakultasByJenjang?: Record<string, string[]>;
+  prodiByJenjang?: Record<string, string[]>;
+  prodiByFakultas?: Record<string, string[]>;
 };
 
 export type NilaiKpi = {

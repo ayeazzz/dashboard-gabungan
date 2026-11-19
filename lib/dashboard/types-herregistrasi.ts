@@ -1,13 +1,20 @@
 // Types untuk Dashboard Herregistrasi dan KRS
 
 export type FiltersHerregistrasi = {
+  jenjang: string;
   fakultas: string;
+  prodi: string;
   statusHerregistrasi: string; // '' | 'Herregistrasi' | 'Tidak Herregistrasi'
   statusKrs: string;            // '' | 'KRS' | 'Tidak KRS'
 };
 
 export type FilterOptionsHerregistrasi = {
+  jenjang: string[];
   fakultas: string[];
+  prodi: string[];
+  fakultasByJenjang?: Record<string, string[]>;
+  prodiByJenjang?: Record<string, string[]>;
+  prodiByFakultas?: Record<string, string[]>;
 };
 
 export type HerregistrasiKpi = {
