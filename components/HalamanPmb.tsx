@@ -41,7 +41,7 @@ export default async function HalamanPmb({
       <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 sm:gap-6 min-w-0">
         <PageHeader
           title="PMB"
-          note={`Snapshot per ${tanggalPanjang(k.tanggalTerakhir)} · bukan siaran langsung`}
+          note={`Snapshot per ${tanggalPanjang(k.tanggalTerakhir)} · bukan live`}
         />
 
         <FilterBar filters={filters} options={options} />

@@ -72,7 +72,7 @@ export function TableTrenHistoris({
               >
                 Keketatan
                 <span className="block text-[10px] font-normal leading-tight text-ink-muted">
-                  % diterima dari pendaftar — makin kecil makin ketat
+                  % diterima dari pendaftar 
                 </span>
               </th>
               <th

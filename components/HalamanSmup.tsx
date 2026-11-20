@@ -136,7 +136,7 @@ export default async function HalamanSmup({
                 items={data.topFavorit.map((p) => ({ label: p.prodi, value: p.pendaftar }))}
               />
             </Panel>
-            <Panel title="Rasio Peminat terhadap Daya Tampung" note={`Top 10 · tahun acuan ${k.tahunAcuan}`}>
+            <Panel title="Prodi Terketat" note={`Top 10 · tahun acuan ${k.tahunAcuan}`}>
               <div className="relative max-h-[380px] overflow-auto border border-border/80 rounded-lg bg-surface shadow-inner scrollbar-thin">
                 <table className="w-full border-collapse">
                   <thead className="sticky top-0 z-20 bg-surface-alt shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
