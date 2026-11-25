@@ -85,7 +85,7 @@ export default async function HalamanPmb({
           <Panel
             className="lg:col-span-2"
             title="Tren Pendaftaran 30 Hari Terakhir"
-            note="Rata-rata garis putus-putus"
+            note="Rata-rata = garis putus-putus"
           >
             <DailyBars data={data.harian} avg={k.rataHarian} />
           </Panel>

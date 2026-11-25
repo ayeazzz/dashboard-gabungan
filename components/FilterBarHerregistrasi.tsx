@@ -163,9 +163,6 @@ export default function FilterBarHerregistrasi({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-2.5 text-xs text-ink-muted">
-        <p className="text-[11px] leading-tight text-ink-muted">
-          Filter tersimpan di URL sehingga dapat dibagikan.
-        </p>
         {hasActiveFilters && (
           <button
             type="button"

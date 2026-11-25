@@ -92,7 +92,7 @@ export default async function HalamanSmup({
                 { label: "Belum Registrasi", value: belumRegistrasi, color: SERIES.s3 },
               ]}
             />
-            <Panel title="Distribusi per Jalur Masuk" note="Urutan tetap sesuai format laporan">
+            <Panel title="Distribusi per Jalur Masuk">
               <BarList items={data.jalur} />
             </Panel>
           </PanelGrid>

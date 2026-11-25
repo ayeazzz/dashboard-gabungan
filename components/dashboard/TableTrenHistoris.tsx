@@ -58,17 +58,17 @@ export function TableTrenHistoris({
       {/* Frame Paten: scroll vertikal dan horizontal di dalam kotak */}
       <div className="relative max-h-[460px] sm:max-h-[520px] overflow-auto border border-border/80 rounded-lg bg-surface shadow-inner scrollbar-thin">
         <table className="w-full border-collapse">
-          <thead className="sticky top-0 z-20 bg-surface-alt shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+          <thead className="sticky top-0 z-20 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
             <tr>
               <th
                 rowSpan={2}
-                className={`${cellTh} bg-surface-alt align-middle text-left sticky left-0 top-0 z-30 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[180px] sm:min-w-[220px]`}
+                className={`${cellTh} bg-white text-ink align-middle text-left sticky left-0 top-0 z-30 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)] min-w-[180px] sm:min-w-[220px]`}
               >
                 Program Studi (Jenjang)
               </th>
               <th
                 colSpan={tahun.length + 1}
-                className={`${cellTh} border-l border-border bg-primary-subtle text-center align-middle`}
+                className={`${cellTh} border-l border-border bg-white text-ink text-center align-middle`}
               >
                 Keketatan
                 <span className="block text-[10px] font-normal leading-tight text-ink-muted">
@@ -77,7 +77,7 @@ export function TableTrenHistoris({
               </th>
               <th
                 colSpan={tahun.length + 1}
-                className={`${cellTh} border-l border-border bg-primary-subtle text-center align-middle`}
+                className={`${cellTh} border-l border-border bg-white text-ink text-center align-middle`}
               >
                 Registrasi
                 <span className="block text-[10px] font-normal leading-tight text-ink-muted">
@@ -85,12 +85,12 @@ export function TableTrenHistoris({
                 </span>
               </th>
             </tr>
-            <tr className="border-b border-border bg-surface-alt">
+            <tr className="border-b border-border bg-white">
               {[...tahun, "Total", ...tahun, "Total"].map((t, i) => (
                 <th
                   key={`${t}-${i}`}
-                  className={`${cellTh} text-right ${i === tahun.length + 1 ? "border-l border-border" : ""} ${
-                    i === tahun.length || i === (tahun.length + 1) * 2 - 1 ? "bg-primary-subtle font-bold" : ""
+                  className={`${cellTh} bg-white text-right text-ink ${i === tahun.length + 1 ? "border-l border-border" : ""} ${
+                    i === tahun.length || i === (tahun.length + 1) * 2 - 1 ? "font-bold" : ""
                   }`}
                 >
                   {t}
@@ -120,7 +120,7 @@ export function TableTrenHistoris({
                   {[...r.keketatan, r.keketatanTotal].map((v, i) => (
                     <td
                       key={`k${i}`}
-                      className={`${cellTd} text-right ${i === tahun.length ? "font-semibold bg-surface-alt/40" : ""}`}
+                      className={`${cellTd} text-right text-ink ${i === tahun.length ? "font-semibold" : ""}`}
                     >
                       {v === null ? "-" : pct(v)}
                     </td>
@@ -128,7 +128,7 @@ export function TableTrenHistoris({
                   {[...r.registrasi, r.registrasiTotal].map((v, i) => (
                     <td
                       key={`r${i}`}
-                      className={`${cellTd} text-right ${i === tahun.length ? "font-semibold bg-surface-alt/40" : ""} ${
+                      className={`${cellTd} text-right text-ink ${i === tahun.length ? "font-semibold" : ""} ${
                         i === 0 ? "border-l border-border" : ""
                       }`}
                     >
